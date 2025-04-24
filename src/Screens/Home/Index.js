@@ -40,6 +40,32 @@ const Index = () => {
   const [otherNitiText, setOtherNitiText] = useState('');
   const [runningTimers, setRunningTimers] = useState({});
 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const updatedTimers = {};
+
+  //     allNiti.forEach(item => {
+  //       if (item.start_time && item.niti_status === "Started") {
+  //         // const start = moment(item.start_time, "HH:mm:ss");
+  //         // const now = moment();
+  //         const start = moment("23:50:00", "HH:mm:ss");
+  //         const now = moment("00:10:00", "HH:mm:ss");
+  //         const duration = moment.duration(now.diff(start));
+
+  //         const hours = String(duration.hours()).padStart(2, '0');
+  //         const minutes = String(duration.minutes()).padStart(2, '0');
+  //         const seconds = String(duration.seconds()).padStart(2, '0');
+
+  //         updatedTimers[item.niti_id] = `${hours}:${minutes}:${seconds}`;
+  //       }
+  //     });
+
+  //     setRunningTimers(updatedTimers);
+  //   }, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, [allNiti]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const updatedTimers = {};
@@ -48,6 +74,14 @@ const Index = () => {
         if (item.start_time && item.niti_status === "Started") {
           const start = moment(item.start_time, "HH:mm:ss");
           const now = moment();
+          // const start = moment("00:10:00", "HH:mm:ss");
+          // const now = moment("01:20:00", "HH:mm:ss");
+
+          // Fix for negative duration at midnight
+          if (start.isAfter(now)) {
+            start.subtract(1, 'day');
+          }
+
           const duration = moment.duration(now.diff(start));
 
           const hours = String(duration.hours()).padStart(2, '0');
@@ -220,7 +254,7 @@ const Index = () => {
         getAllNiti();
         console.log("Niti resumed successfully", responseData);
       } else {
-        console.log("Error", responseData.msg);
+        console.log("Error", responseData);
       }
     } catch (error) {
       console.log(error);
