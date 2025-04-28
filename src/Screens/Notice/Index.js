@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, StyleSheet, ToastAndroid, ScrollView, RefreshControl } from 'react-native';
+import DatePicker from 'react-native-date-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
 import { base_url } from '../../../App';
@@ -10,6 +11,8 @@ const Index = () => {
     const [noticeText, setNoticeText] = useState('');
     const [isEditMode, setIsEditMode] = useState(false);
     const [editNoticeId, setEditNoticeId] = useState(null);
+    const [openDatePicker, setOpenDatePicker] = useState(false);
+    const [noticeDate, setNoticeDate] = useState(new Date());
 
     const [refreshing, setRefreshing] = React.useState(false);
     const onRefresh = React.useCallback(() => {
@@ -55,6 +58,7 @@ const Index = () => {
                 body: JSON.stringify({
                     id: isEditMode ? editNoticeId : null,
                     notice_name: noticeText,
+                    notice_date: moment(noticeDate).format('YYYY-MM-DD'),
                 }),
             });
 
@@ -95,16 +99,18 @@ const Index = () => {
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(`${base_url}api/delete-temple-notice/${selectedNoticeId}`, {
-                method: 'DELETE',
+            const response = await fetch(`${base_url}api/temple-notice/delete/${selectedNoticeId}`, {
+                method: 'POST',
             });
 
             const result = await response.json();
             if (result.status) {
                 ToastAndroid.show('Notice deleted successfully', ToastAndroid.SHORT);
-                getNoticeForToday(); // reload list
+                fetchNotices();
+                console.log("Notice deleted successfully:", result.data);
             } else {
                 ToastAndroid.show('Failed to delete notice', ToastAndroid.SHORT);
+                console.log("Delete Notice Error:", result);
             }
         } catch (error) {
             console.log("Delete error:", error);
@@ -153,7 +159,7 @@ const Index = () => {
                 showsVerticalScrollIndicator={false}
             />
 
-            {/* Modal */}
+            {/* Add / Update Notice Modal */}
             <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView contentContainerStyle={styles.modalBox}>
@@ -166,6 +172,9 @@ const Index = () => {
                             multiline
                             numberOfLines={4}
                         />
+                        <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.dateBtn}>
+                            <Text style={{ color: '#333' }}>{moment(noticeDate).format("DD MMM YYYY")}</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={handleSaveNotice} style={styles.saveBtn}>
                             <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
                         </TouchableOpacity>
@@ -173,6 +182,17 @@ const Index = () => {
                             <Text style={{ color: '#B7070A' }}>Cancel</Text>
                         </TouchableOpacity>
                     </ScrollView>
+                    <DatePicker
+                        modal
+                        open={openDatePicker}
+                        date={noticeDate}
+                        mode="date"
+                        onConfirm={(date) => {
+                            setOpenDatePicker(false);
+                            setNoticeDate(date);
+                        }}
+                        onCancel={() => setOpenDatePicker(false)}
+                    />
                 </View>
             </Modal>
 
@@ -313,6 +333,15 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         fontSize: 15,
         textAlignVertical: 'top'
+    },
+    dateBtn: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 20,
+        backgroundColor: '#f1f1f1',
+        alignItems: 'center'
     },
     saveBtn: {
         backgroundColor: '#B7070A',
