@@ -1046,7 +1046,12 @@ const Index = () => {
                       <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ବନ୍ଦ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
                       {(() => {
                         const start = moment(item.start_time, "HH:mm:ss");
-                        const end = moment(item.end_time, "HH:mm:ss");
+                        let end = moment(item.end_time, "HH:mm:ss");
+
+                        if (end.isBefore(start)) {
+                          end.add(1, 'day'); // Add 1 day if end is before start
+                        }
+
                         const duration = moment.duration(end.diff(start));
 
                         const hours = String(duration.hours()).padStart(2, '0');
