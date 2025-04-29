@@ -48,6 +48,7 @@ const OtpVerify = (props) => {
             if (response.ok) {
                 console.log('Login successfully', data);
                 await AsyncStorage.setItem('storeAccesstoken', data.token);
+                await AsyncStorage.setItem('storeUserData', JSON.stringify(data.user));
                 navigation.replace('Home');
             } else {
                 // Handle error response

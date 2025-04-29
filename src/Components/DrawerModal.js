@@ -1,12 +1,39 @@
 import { StyleSheet, Text, View, Modal, TouchableWithoutFeedback, TouchableOpacity, Alert, Image, Pressable, TextInput, ToastAndroid } from 'react-native'
-import React from 'react'
-import { useNavigation } from '@react-navigation/native'
+import React, { useState, useEffect } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation, useIsFocused } from '@react-navigation/native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 const DrawerModal = ({ visible, onClose }) => {
 
     const navigation = useNavigation()
+    const isFocused = useIsFocused();
+    const [userData, setUserData] = useState(null);
+
+    const getUserDataFromLocalStorage = async () => {
+        try {
+            const userData = await AsyncStorage.getItem('storeUserData');
+            if (userData) {
+                const parsedData = JSON.parse(userData);
+                console.log("User Data", parsedData);
+                setUserData(parsedData);
+                return parsedData;
+            } else {
+                console.log("No user data found in local storage");
+                return null;
+            }
+        } catch (error) {
+            console.log("Error retrieving user data from local storage", error);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        if (isFocused) {
+            getUserDataFromLocalStorage();
+        }
+    }, [isFocused]);
 
     return (
         <View>
@@ -25,20 +52,23 @@ const DrawerModal = ({ visible, onClose }) => {
                                         <View style={{ height: 50, width: 50, borderRadius: 25, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
                                             <Image style={{ height: 50, width: 50, borderRadius: 25 }} source={require('../assets/images/darshan.png')} resizeMode='cover' />
                                         </View>
-                                        <View style={{ marginLeft: 10 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>Mr. Sidhanta</Text>
-                                            <Text style={{ fontSize: 12, fontWeight: '400', color: '#fff', marginLeft: 10 }}>Puri Panda</Text>
+                                        <View style={{ marginLeft: 10, width: '78%' }}>
+                                            {userData?.name ?
+                                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>{userData.name}</Text>
+                                                :
+                                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>Puri Panda Puri Panda Puri Panda</Text>
+                                            }
                                         </View>
                                     </View>
                                 </View>
                             </View>
-                            <TouchableOpacity style={styles.drawerCell} onPress={() => {navigation.navigate('HundiCollection'), onClose()}}>
+                            <TouchableOpacity style={styles.drawerCell} onPress={() => { navigation.navigate('HundiCollection'), onClose() }}>
                                 <View style={{ width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
                                     <Image style={{ height: 23, width: 23 }} source={require("../assets/images/hundiColection654.png")} />
                                 </View>
                                 <Text style={styles.drawerLable}>ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.drawerCell} onPress={() => {navigation.navigate('Notice'), onClose()}}>
+                            <TouchableOpacity style={styles.drawerCell} onPress={() => { navigation.navigate('Notice'), onClose() }}>
                                 <View style={{ width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
                                     <AntDesign name="notification" size={24} color="#FFA726" />
                                 </View>
