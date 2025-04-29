@@ -6,13 +6,16 @@ import moment from 'moment';
 import { base_url } from '../../../App';
 
 const Index = () => {
+
     const [notices, setNotices] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [noticeText, setNoticeText] = useState('');
     const [isEditMode, setIsEditMode] = useState(false);
     const [editNoticeId, setEditNoticeId] = useState(null);
-    const [openDatePicker, setOpenDatePicker] = useState(false);
-    const [noticeDate, setNoticeDate] = useState(new Date());
+    const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
+    const [noticeStartDate, setNoticeStartDate] = useState(new Date());
+    const [openEndDatePicker, setOpenEndDatePicker] = useState(false);
+    const [noticeEndDate, setNoticeEndDate] = useState(new Date());
 
     const [refreshing, setRefreshing] = React.useState(false);
     const onRefresh = React.useCallback(() => {
@@ -46,6 +49,10 @@ const Index = () => {
             ToastAndroid.show('Notice must be at least 4 characters.', ToastAndroid.SHORT);
             return;
         }
+        if (noticeEndDate < noticeStartDate) {
+            ToastAndroid.show('End date cannot be earlier than start date.', ToastAndroid.SHORT);
+            return;
+        }
 
         try {
             const endpoint = isEditMode
@@ -58,7 +65,8 @@ const Index = () => {
                 body: JSON.stringify({
                     id: isEditMode ? editNoticeId : null,
                     notice_name: noticeText,
-                    notice_date: moment(noticeDate).format('YYYY-MM-DD'),
+                    start_date: moment(noticeStartDate).format('YYYY-MM-DD'),
+                    end_date: moment(noticeEndDate).format('YYYY-MM-DD'),
                 }),
             });
 
@@ -84,6 +92,8 @@ const Index = () => {
 
     const handleEditNotice = (notice) => {
         setNoticeText(notice.notice_name);
+        setNoticeStartDate(new Date(notice.start_date));
+        setNoticeEndDate(new Date(notice.end_date));
         setEditNoticeId(notice.id);
         setIsEditMode(true);
         setIsModalVisible(true);
@@ -140,7 +150,7 @@ const Index = () => {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>📢 ସୂଚନା</Text>
+                <Text style={styles.headerTitle}>ସୂଚନା</Text>
                 <TouchableOpacity onPress={() => {
                     setNoticeText('');
                     setIsEditMode(false);
@@ -163,17 +173,20 @@ const Index = () => {
             <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView contentContainerStyle={styles.modalBox}>
-                        <Text style={styles.modalTitle}>{isEditMode ? '✏️ Edit Notice' : '➕ Add New Notice'}</Text>
+                        <Text style={styles.modalTitle}>ସୂଚନା</Text>
                         <TextInput
-                            placeholder="Enter your notice here..."
+                            placeholder="ଏଠାରେ ଆପଣଙ୍କର ସୂଚନା ଲେଖନ୍ତୁ..."
                             value={noticeText}
                             onChangeText={setNoticeText}
                             style={styles.input}
                             multiline
                             numberOfLines={4}
                         />
-                        <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.dateBtn}>
-                            <Text style={{ color: '#333' }}>{moment(noticeDate).format("DD MMM YYYY")}</Text>
+                        <TouchableOpacity onPress={() => setOpenStartDatePicker(true)} style={styles.dateBtn}>
+                            <Text style={{ color: '#333' }}>{moment(noticeStartDate).format("DD MMM YYYY")}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setOpenEndDatePicker(true)} style={styles.dateBtn}>
+                            <Text style={{ color: '#333' }}>{moment(noticeEndDate).format("DD MMM YYYY")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleSaveNotice} style={styles.saveBtn}>
                             <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
@@ -184,14 +197,25 @@ const Index = () => {
                     </ScrollView>
                     <DatePicker
                         modal
-                        open={openDatePicker}
-                        date={noticeDate}
+                        open={openStartDatePicker}
+                        date={noticeStartDate}
                         mode="date"
                         onConfirm={(date) => {
-                            setOpenDatePicker(false);
-                            setNoticeDate(date);
+                            setOpenStartDatePicker(false);
+                            setNoticeStartDate(date);
                         }}
-                        onCancel={() => setOpenDatePicker(false)}
+                        onCancel={() => setOpenStartDatePicker(false)}
+                    />
+                    <DatePicker
+                        modal
+                        open={openEndDatePicker}
+                        date={noticeEndDate}
+                        mode="date"
+                        onConfirm={(date) => {
+                            setOpenEndDatePicker(false);
+                            setNoticeEndDate(date);
+                        }}
+                        onCancel={() => setOpenEndDatePicker(false)}
                     />
                 </View>
             </Modal>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Modal, TouchableOpacity, TextInput, StyleSheet, ToastAndroid, ScrollView, RefreshControl } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
 import { base_url } from '../../../App';
+import moment from 'moment';
 
 const Index = () => {
     const [hundiList, setHundiList] = useState([]);
@@ -30,6 +30,7 @@ const Index = () => {
             const response = await fetch(`${base_url}api/get-hundi-collections`);
             const result = await response.json();
             if (result.status) setHundiList(result.data);
+            // console.log("Hundi Collection:", result.data);
         } catch (error) {
             console.log("Error fetching hundi collection", error);
         }
@@ -44,8 +45,8 @@ const Index = () => {
             const payload = {
                 date: moment(hundiDate).format('YYYY-MM-DD'),
                 rupees: hundiData.rupees,
-                gold: `${hundiData.gold} ଗ୍ରାମ`,
-                silver: `${hundiData.silver} ଗ୍ରାମ`,
+                gold: `${hundiData.gold}`,
+                silver: `${hundiData.silver}`,
             };
 
             // console.log("Payload to save:", payload);
@@ -64,7 +65,7 @@ const Index = () => {
             if (result.status) {
                 ToastAndroid.show('ସେଭ୍‍ କରାଯାଇଛି', ToastAndroid.SHORT);
                 setHundiData({ rupees: '', gold: '', silver: '' });
-                setIsModalVisible(false);
+                // setIsModalVisible(false);
                 getHundiCollection();
             } else {
                 ToastAndroid.show('ସେଭ୍ ହୋଇପାରିଲା ନାହିଁ', ToastAndroid.SHORT);
@@ -80,8 +81,8 @@ const Index = () => {
             id: editingItem.id,
             date: moment(hundiDate).format('YYYY-MM-DD'),
             rupees: hundiData.rupees,
-            gold: `${hundiData.gold} ଗ୍ରାମ`,
-            silver: `${hundiData.silver} ଗ୍ରାମ`,
+            gold: `${hundiData.gold}`,
+            silver: `${hundiData.silver}`,
         };
 
         try {
@@ -108,7 +109,9 @@ const Index = () => {
             if (response.ok && result.status) {
                 ToastAndroid.show('ଅପଡେଟ୍‍ ହୋଇଛି', ToastAndroid.SHORT);
                 setHundiData({ rupees: '', gold: '', silver: '' });
-                setIsModalVisible(false);
+                // setIsModalVisible(false);
+                setIsEditMode(false);
+                setEditingItem(null);
                 getHundiCollection();
             } else {
                 ToastAndroid.show(result.message || 'ଅପଡେଟ୍‍ ହୋଇପାରିଲା ନାହିଁ', ToastAndroid.SHORT);
@@ -119,6 +122,10 @@ const Index = () => {
             console.error("Fetch error:", error);
         }
     };
+
+    const todayDate = moment().format('YYYY-MM-DD');
+    const todaysHundiList = hundiList.filter(item => item.date === todayDate);
+    const todaysHundiListReversed = [...todaysHundiList].reverse().slice(0, 5);
 
     const renderItem = ({ item, index }) => (
         <View style={styles.card}>
@@ -151,7 +158,7 @@ const Index = () => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>🪙 ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
+                <Text style={styles.headerTitle}>ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
                 <TouchableOpacity
                     onPress={() => {
                         setIsModalVisible(true);
@@ -163,18 +170,66 @@ const Index = () => {
                 </TouchableOpacity>
             </View>
 
+            <View style={{ marginBottom: 10, padding: 20, width: '95%', alignSelf: 'center', borderRadius: 10, backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.5, elevation: 3 }}>
+                <Text style={styles.label}>ଟଙ୍କା</Text>
+                <TextInput
+                    placeholder="ଟଙ୍କା"
+                    keyboardType="numeric"
+                    value={hundiData.rupees}
+                    onChangeText={(val) => setHundiData({ ...hundiData, rupees: val })}
+                    style={styles.input}
+                />
+
+                <Text style={styles.label}>ସୁନା (ଗ୍ରାମ)</Text>
+                <TextInput
+                    placeholder="ସୁନା"
+                    keyboardType="numeric"
+                    value={hundiData.gold.toString()}
+                    onChangeText={(val) => setHundiData({ ...hundiData, gold: val })}
+                    style={styles.input}
+                />
+
+                <Text style={styles.label}>ରୂପା (ଗ୍ରାମ)</Text>
+                <TextInput
+                    placeholder="ରୂପା"
+                    keyboardType="numeric"
+                    value={hundiData.silver.toString()}
+                    onChangeText={(val) => setHundiData({ ...hundiData, silver: val })}
+                    style={styles.input}
+                />
+
+                <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.dateBtn}>
+                    <Text style={{ color: '#333' }}>{moment(hundiDate).format("DD MMM YYYY")}</Text>
+                </TouchableOpacity>
+                <DatePicker
+                    modal
+                    open={openDatePicker}
+                    date={hundiDate}
+                    mode="date"
+                    onConfirm={(date) => {
+                        setOpenDatePicker(false);
+                        setHundiDate(date);
+                    }}
+                    onCancel={() => setOpenDatePicker(false)}
+                />
+
+                <TouchableOpacity onPress={isEditMode ? handleUpdateHundi : handleSaveHundi} style={styles.saveBtn}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
+                </TouchableOpacity>
+            </View>
+
             <FlatList
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                data={hundiList.slice(0, 5)} // Show only the first 5 items
+                data={todaysHundiListReversed}
                 showsVerticalScrollIndicator={false}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderItem}
             />
 
-            <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
+            {/* <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView contentContainerStyle={styles.modalBox}>
-                        <Text style={styles.modalTitle}>{isEditMode ? '✏️ ଏଡିଟ ହୁଣ୍ଡି ସଂଗ୍ରହ' : '📅 ସେଭ୍ ହୁଣ୍ଡି ସଂଗ୍ରହ'}</Text>
+                        <Text style={styles.modalTitle}>ଆଜିର ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
 
                         <Text style={styles.label}>ଟଙ୍କା</Text>
                         <TextInput
@@ -228,7 +283,7 @@ const Index = () => {
                         onCancel={() => setOpenDatePicker(false)}
                     />
                 </View>
-            </Modal>
+            </Modal> */}
         </View>
     );
 };

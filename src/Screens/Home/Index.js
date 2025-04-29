@@ -201,6 +201,7 @@ const Index = () => {
         getAllNiti();
         console.log("Niti started successfully", responseData);
       } else {
+        getAllNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -228,6 +229,7 @@ const Index = () => {
         getAllNiti();
         console.log("Niti paused successfully", responseData);
       } else {
+        getAllNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -254,6 +256,7 @@ const Index = () => {
         getAllNiti();
         console.log("Niti resumed successfully", responseData);
       } else {
+        getAllNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -281,6 +284,7 @@ const Index = () => {
         getCompletedNiti();
         console.log("Niti stopped successfully", responseData);
       } else {
+        getAllNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -346,6 +350,7 @@ const Index = () => {
         // console.log("Niti ended successfully", responseData);
         ToastAndroid.show('Niti ended successfully', ToastAndroid.SHORT);
       } else {
+        getAllNiti();
         // console.log("Error", responseData);
         ToastAndroid.show('Error ending Niti', ToastAndroid.SHORT);
       }
@@ -544,11 +549,11 @@ const Index = () => {
           <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={{ marginHorizontal: 10 }}>
             <FontAwesome5 name="bars" size={23} color="#fff" />
           </TouchableOpacity>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text>
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text>
         </TouchableOpacity>
         <View style={{ marginRight: 10 }}>
           <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -641,7 +646,7 @@ const Index = () => {
         </View>
       )}
       {/* Today Date */}
-      <View style={{ backgroundColor: '#FFBE00', paddingTop: 1 }}>
+      <View style={{ backgroundColor: '#FFBE00' }}>
         <View style={{ backgroundColor: '#B7070A', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
         </View>
@@ -779,11 +784,10 @@ const Index = () => {
                         )}
                       </View>
                     </TouchableOpacity>
-                    {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />}
+                    {/* {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />} */}
                     {/* Sub Niti Text Area Input Box */}
-                    {collapseNiti === item.niti_id && (item.niti_type === "daily" || item.niti_type === "special") && (item.niti_status === "Started" || item.niti_status === "Paused") && (
+                    {/* {collapseNiti === item.niti_id && (item.niti_type === "daily" || item.niti_type === "special") && (item.niti_status === "Started" || item.niti_status === "Paused") && (
                       <View style={{ marginTop: 10, paddingHorizontal: 10 }}>
-                        {/* show here sub niti list */}
                         <FlatList
                           data={item.running_sub_niti}
                           keyExtractor={subItem => subItem.sub_niti_id.toString()}
@@ -822,7 +826,6 @@ const Index = () => {
                             </View>
                           )}
                         />
-                        {/* Edit Sub Niti Modal */}
                         <Modal
                           visible={isEditModalVisible}
                           transparent
@@ -864,8 +867,6 @@ const Index = () => {
                             </View>
                           </View>
                         </Modal>
-
-                        {/* Confirm Delete Sub Niti */}
                         <Modal
                           visible={visibleConfirmSubNitiDelete}
                           transparent
@@ -929,8 +930,6 @@ const Index = () => {
                             </View>
                           </View>
                         </Modal>
-
-                        {/* Add Sub Niti Input Box */}
                         <TextInput
                           placeholder="ଉପନୀତି ଯୋଡନ୍ତୁ..."
                           placeholderTextColor="#888"
@@ -940,8 +939,6 @@ const Index = () => {
                           // numberOfLines={4}
                           style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, paddingVertical: 10, fontSize: 16, color: '#000', textAlignVertical: 'top', marginTop: 10 }}
                         />
-
-                        {/* Add Sub Niti Button */}
                         <TouchableOpacity
                           style={{
                             backgroundColor: '#B7070A',
@@ -955,7 +952,7 @@ const Index = () => {
                           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>Add Sub Niti</Text>
                         </TouchableOpacity>
                       </View>
-                    )}
+                    )} */}
                     {/* Sub Niti List */}
                     {/* {collapseNiti === item.niti_id && item.sub_nitis.length > 0 && (
                       item.sub_nitis
@@ -1198,7 +1195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#B7070A',
-    paddingVertical: 13,
+    paddingVertical: 20,
     paddingHorizontal: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

@@ -9,7 +9,7 @@ const NoticeBanner = ({ noticeText }) => {
 
     return (
         <TouchableOpacity style={styles.container} onPress={() => navigation.navigate('Notice')}>
-            <Text style={styles.label}>📢 ସୂଚନା:</Text>
+            <Text style={styles.label}>ସୂଚନା:</Text>
             <View style={styles.marqueeWrapper}>
                 <TextTicker
                     style={styles.noticeText}
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         backgroundColor: '#FFF3E0',
-        paddingVertical: 10,
+        paddingVertical: 15,
         paddingHorizontal: 10,
         alignItems: 'center',
         overflow: 'hidden',
@@ -43,14 +43,14 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#e65100',
         marginRight: 10,
-        fontSize: 14,
+        fontSize: 16,
     },
     marqueeWrapper: {
         flex: 1,
         overflow: 'hidden',
     },
     noticeText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '600',
         color: '#4e342e',
         whiteSpace: 'nowrap',

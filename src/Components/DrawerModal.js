@@ -50,13 +50,13 @@ const DrawerModal = ({ visible, onClose }) => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: '100%' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <View style={{ height: 50, width: 50, borderRadius: 25, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
-                                            <Image style={{ height: 50, width: 50, borderRadius: 25 }} source={require('../assets/images/darshan.png')} resizeMode='cover' />
+                                            <Image style={{ height: 50, width: 50, borderRadius: 25 }} source={require('../assets/images/temple654.jpg')} resizeMode='cover' />
                                         </View>
                                         <View style={{ marginLeft: 10, width: '78%' }}>
                                             {userData?.name ?
                                                 <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>{userData.name}</Text>
                                                 :
-                                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>Puri Panda Puri Panda Puri Panda</Text>
+                                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', marginLeft: 10 }}>Puri Panda</Text>
                                             }
                                         </View>
                                     </View>
@@ -64,13 +64,13 @@ const DrawerModal = ({ visible, onClose }) => {
                             </View>
                             <TouchableOpacity style={styles.drawerCell} onPress={() => { navigation.navigate('HundiCollection'), onClose() }}>
                                 <View style={{ width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
-                                    <Image style={{ height: 23, width: 23 }} source={require("../assets/images/hundiColection654.png")} />
+                                    <Image style={{ height: 25, width: 25 }} source={require("../assets/images/hundiColection654.png")} />
                                 </View>
                                 <Text style={styles.drawerLable}>ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.drawerCell} onPress={() => { navigation.navigate('Notice'), onClose() }}>
                                 <View style={{ width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
-                                    <AntDesign name="notification" size={24} color="#FFA726" />
+                                    <AntDesign name="notification" size={28} color="#FFA726" />
                                 </View>
                                 <Text style={styles.drawerLable}>ସୂଚନା</Text>
                             </TouchableOpacity>
@@ -98,10 +98,10 @@ const DrawerModal = ({ visible, onClose }) => {
                                 <View style={{ width: '100%', height: 0.5, backgroundColor: '#B7070A', marginBottom: 10 }} />
                                 <View style={{ width: '90%', alignSelf: 'center' }}>
                                     <Text style={{ fontSize: 12, fontWeight: '500', color: '#000' }}>Current Version 1.0.0</Text>
-                                    <Pressable style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                    {/* <Pressable style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                         <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', opacity: 0.7, marginRight: 7 }}>Update Available  2.0</Text>
                                         <Icon name="file-download" size={20} color={'green'} />
-                                    </Pressable>
+                                    </Pressable> */}
                                 </View>
                             </View>
                         </View>
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     },
     drawerLable: {
         color: '#000',
-        fontSize: 15,
+        fontSize: 20,
         fontWeight: '500',
         letterSpacing: 0.6,
         marginLeft: 15
