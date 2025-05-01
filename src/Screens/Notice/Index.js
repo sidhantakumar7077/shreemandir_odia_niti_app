@@ -182,9 +182,11 @@ const Index = () => {
                             multiline
                             numberOfLines={4}
                         />
+                        <Text style={styles.modalTitle}>ଆରମ୍ଭ ତାରିଖ</Text>
                         <TouchableOpacity onPress={() => setOpenStartDatePicker(true)} style={styles.dateBtn}>
                             <Text style={{ color: '#333' }}>{moment(noticeStartDate).format("DD MMM YYYY")}</Text>
                         </TouchableOpacity>
+                        <Text style={styles.modalTitle}>ଶେଷ ତାରିଖ</Text>
                         <TouchableOpacity onPress={() => setOpenEndDatePicker(true)} style={styles.dateBtn}>
                             <Text style={{ color: '#333' }}>{moment(noticeEndDate).format("DD MMM YYYY")}</Text>
                         </TouchableOpacity>
@@ -341,12 +343,12 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         borderRadius: 14,
         padding: 20,
-        top: '30%',
+        top: '20%'
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 15,
+        marginBottom: 5,
         color: '#B7070A'
     },
     input: {

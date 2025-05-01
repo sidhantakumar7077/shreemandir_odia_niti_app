@@ -198,6 +198,7 @@ const Index = () => {
                     style={styles.input}
                 />
 
+                <Text style={styles.label}>ତାରିଖ</Text>
                 <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.dateBtn}>
                     <Text style={{ color: '#333' }}>{moment(hundiDate).format("DD MMM YYYY")}</Text>
                 </TouchableOpacity>

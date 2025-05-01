@@ -110,9 +110,11 @@ const Index = () => {
 
   const handleConfirmAction = () => {
     if (confirmAction === 'start') startNiti(confirmData);
-    if (confirmAction === 'pause') pauseNiti(confirmData);
+    // if (confirmAction === 'pause') pauseNiti(confirmData);
+    if (confirmAction === 'pause') setIsModalVisible(true);
     if (confirmAction === 'resume') resumeNiti(confirmData);
     if (confirmAction === 'stop') stopNiti(confirmData);
+    if (confirmAction === 'delete') deleteOtherNiti(confirmData);
     setConfirmVisible(false);
   };
 
@@ -210,7 +212,7 @@ const Index = () => {
   };
 
   const pauseNiti = async (id) => {
-    setIsModalVisible(true);
+    // setIsModalVisible(true);
     const token = await AsyncStorage.getItem('storeAccesstoken');
     try {
       const response = await fetch(base_url + 'api/pause-niti', {
@@ -293,6 +295,7 @@ const Index = () => {
   };
 
   const handleSubmitOtherNiti = async () => {
+    pauseNiti(confirmData);
     const token = await AsyncStorage.getItem('storeAccesstoken');
     const selectedNiti = otherNiti.find(item => item.id === selectedItem);
     const payload = {
@@ -328,6 +331,37 @@ const Index = () => {
     } catch (error) {
       console.log('Error saving special Niti:', error);
       ToastAndroid.show('Error saving special Niti', ToastAndroid.SHORT);
+    }
+  };
+
+  const deleteOtherNiti = async (id) => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    // console.log("Deleting Other Niti with ID:", id);
+    // return;
+    try {
+      const response = await fetch(base_url + 'api/niti/delete-other/' + id, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        console.log("Other Niti deleted successfully", responseData);
+        ToastAndroid.show('Other Niti deleted successfully', ToastAndroid.SHORT);
+      } else {
+        getAllNiti();
+        getCompletedNiti();
+        console.log("Error", responseData);
+        ToastAndroid.show('Error deleting Other Niti', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.log("Error", error);
+      ToastAndroid.show('Error deleting Other Niti', ToastAndroid.SHORT);
     }
   };
 
@@ -557,163 +591,197 @@ const Index = () => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* Notice Banner */}
-      {notice && notice.notice_name &&
-        <NoticeBanner noticeText={notice.notice_name} />
-      }
-      {/* Running Niti or previous Niti */}
-      {(allNiti.some(niti => niti.niti_status === "Started") || completedNiti.length > 0) && (
-        <View style={{
-          backgroundColor: '#fff',
-          paddingHorizontal: 20,
-          paddingVertical: 18,
-          borderBottomLeftRadius: 16,
-          borderBottomRightRadius: 16,
-          marginBottom: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 6,
-          elevation: 4,
-        }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* Niti Info */}
-            <View style={{ width: '75%' }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#341551' }}>
-                {
-                  allNiti.find(n => n.niti_status === "Started")?.niti_name ??
-                  completedNiti[completedNiti.length - 1]?.niti_name ??
-                  "No Niti"
-                }
-              </Text>
-              {/* Red underline */}
-              <View style={{ backgroundColor: '#fa0000', width: 80, height: 1.5, marginVertical: 8 }} />
-              {/* Date and Time Info */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-                {/* Date */}
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="calendar-outline" size={16} color="#fa0000" />
-                  <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
-                    {moment().format("Do MMMM")}
-                  </Text>
-                </View>
-                {/* Start Time */}
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="time-outline" size={16} color="#fa0000" />
-                  <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
-                    {
-                      moment(
-                        allNiti.find(n => n.niti_status === "Started")?.start_time ??
-                        completedNiti[completedNiti.length - 1]?.start_time, "HH:mm:ss"
-                      ).format("hh:mm A")
-                    }
-                  </Text>
-                </View>
-              </View>
-              {/* Running Time */}
-              {allNiti.find(n => n.niti_status === "Started") && (
-                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginTop: 8 }}>
-                  ⏱️ ନୀତି ଚାଲିଥିବା ସମୟ: <Text style={{ color: '#fa0000' }}>{runningTimers[allNiti.find(n => n.niti_status === "Started")?.niti_id] || '00:00:00'}</Text>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        {/* Notice Banner */}
+        {notice && notice.notice_name &&
+          <NoticeBanner noticeText={notice.notice_name} />
+        }
+        {/* Running Niti or previous Niti */}
+        {(allNiti.some(niti => niti.niti_status === "Started") || completedNiti.length > 0) && (
+          <View style={{
+            backgroundColor: '#fff',
+            paddingHorizontal: 20,
+            paddingVertical: 18,
+            borderBottomLeftRadius: 16,
+            borderBottomRightRadius: 16,
+            marginBottom: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 6,
+            elevation: 4,
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Niti Info */}
+              <View style={{ width: '75%' }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#341551' }}>
+                  {
+                    allNiti.find(n => n.niti_status === "Started")?.niti_name ??
+                    completedNiti[completedNiti.length - 1]?.niti_name ??
+                    "No Niti"
+                  }
                 </Text>
-              )}
-            </View>
-            {/* Badge & Arrow */}
-            <View style={{ alignItems: 'center' }}>
-              {allNiti.find(n => n.niti_status === "Started") ? (
-                <View style={{
-                  backgroundColor: '#28a745',
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 3,
-                  marginBottom: 6,
-                }}>
-                  <Text style={{ color: '#fff', fontSize: 19, fontWeight: '600', letterSpacing: 2 }}>ଚାଲୁଛି</Text>
+                {/* Red underline */}
+                <View style={{ backgroundColor: '#fa0000', width: 80, height: 1.5, marginVertical: 8 }} />
+                {/* Date and Time Info */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+                  {/* Date */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="calendar-outline" size={16} color="#fa0000" />
+                    <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
+                      {moment().format("Do MMMM")}
+                    </Text>
+                  </View>
+                  {/* Start Time */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="time-outline" size={16} color="#fa0000" />
+                    <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
+                      {
+                        moment(
+                          allNiti.find(n => n.niti_status === "Started")?.start_time ??
+                          completedNiti[completedNiti.length - 1]?.start_time, "HH:mm:ss"
+                        ).format("hh:mm A")
+                      }
+                    </Text>
+                  </View>
                 </View>
-              ) : completedNiti.length > 0 ? (
-                <View style={{
-                  backgroundColor: '#6c757d',
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 3,
-                  marginBottom: 6,
-                }}>
-                  <Text style={{ color: '#fff', fontSize: 19, fontWeight: '600', letterSpacing: 2 }}>ପୂର୍ବ ନୀତି</Text>
-                </View>
-              ) : null}
-              {/* <Ionicons name="chevron-forward" size={24} color="#fa0000" /> */}
+                {/* Running Time */}
+                {allNiti.find(n => n.niti_status === "Started") && (
+                  <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginTop: 8 }}>
+                    ⏱️ ନୀତି ଚାଲିଥିବା ସମୟ: <Text style={{ color: '#fa0000' }}>{runningTimers[allNiti.find(n => n.niti_status === "Started")?.niti_id] || '00:00:00'}</Text>
+                  </Text>
+                )}
+              </View>
+              {/* Badge & Arrow */}
+              <View style={{ alignItems: 'center' }}>
+                {allNiti.find(n => n.niti_status === "Started") ? (
+                  <View style={{
+                    backgroundColor: '#28a745',
+                    borderRadius: 10,
+                    paddingHorizontal: 10,
+                    paddingVertical: 3,
+                    marginBottom: 6,
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 19, fontWeight: '600', letterSpacing: 2 }}>ଚାଲୁଛି</Text>
+                  </View>
+                ) : completedNiti.length > 0 ? (
+                  <View style={{
+                    backgroundColor: '#6c757d',
+                    borderRadius: 10,
+                    paddingHorizontal: 10,
+                    paddingVertical: 3,
+                    marginBottom: 6,
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 19, fontWeight: '600', letterSpacing: 2 }}>ପୂର୍ବ ନୀତି</Text>
+                  </View>
+                ) : null}
+                {/* <Ionicons name="chevron-forward" size={24} color="#fa0000" /> */}
+              </View>
             </View>
           </View>
+        )}
+        {/* Today Date */}
+        <View style={{ backgroundColor: '#FFBE00' }}>
+          <View style={{ backgroundColor: '#B7070A', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
+          </View>
         </View>
-      )}
-      {/* Today Date */}
-      <View style={{ backgroundColor: '#FFBE00' }}>
-        <View style={{ backgroundColor: '#B7070A', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
+        {/* Tabs for Upcoming and Completed Niti */}
+        <View style={{ backgroundColor: '#FFBE00', width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => setActiveTab('upcoming')} style={{ width: '50%', alignItems: 'center', padding: 10 }}>
+            <Text style={{ color: activeTab === 'upcoming' ? '#B7070A' : '#444545', fontSize: activeTab === 'upcoming' ? 20 : 18, fontWeight: 'bold' }}>ଆଗାମୀ ନୀତି</Text>
+            <View style={{ backgroundColor: activeTab === 'upcoming' ? '#B7070A' : '#444545', width: '100%', height: activeTab === 'upcoming' ? 2 : 1, marginTop: 5 }} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab('complete')} style={{ width: '50%', alignItems: 'center', padding: 10 }}>
+            <Text style={{ color: activeTab === 'complete' ? '#B7070A' : '#444545', fontSize: activeTab === 'complete' ? 20 : 18, fontWeight: 'bold' }}>ନୀତି ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>
+            <View style={{ backgroundColor: activeTab === 'complete' ? '#B7070A' : '#444545', width: '100%', height: activeTab === 'complete' ? 2 : 1, marginTop: 5 }} />
+          </TouchableOpacity>
         </View>
-      </View>
-      {/* Tabs for Upcoming and Completed Niti */}
-      <View style={{ backgroundColor: '#FFBE00', width: '100%', flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => setActiveTab('upcoming')} style={{ width: '50%', alignItems: 'center', padding: 10 }}>
-          <Text style={{ color: activeTab === 'upcoming' ? '#B7070A' : '#444545', fontSize: activeTab === 'upcoming' ? 20 : 18, fontWeight: 'bold' }}>ଆଗାମୀ ନୀତି</Text>
-          <View style={{ backgroundColor: activeTab === 'upcoming' ? '#B7070A' : '#444545', width: '100%', height: activeTab === 'upcoming' ? 2 : 1, marginTop: 5 }} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setActiveTab('complete')} style={{ width: '50%', alignItems: 'center', padding: 10 }}>
-          <Text style={{ color: activeTab === 'complete' ? '#B7070A' : '#444545', fontSize: activeTab === 'complete' ? 20 : 18, fontWeight: 'bold' }}>ନୀତି ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>
-          <View style={{ backgroundColor: activeTab === 'complete' ? '#B7070A' : '#444545', width: '100%', height: activeTab === 'complete' ? 2 : 1, marginTop: 5 }} />
-        </TouchableOpacity>
-      </View>
-      {/* Niti List */}
-      {spinner ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#B7070A' }}>Loading...</Text>
-        </View>)
-        : (
-          activeTab === 'upcoming' ? (
-            <ScrollView style={styles.cell} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={false}
-                data={allNiti}
-                keyExtractor={item => item.niti_id}
-                renderItem={({ item, index }) => (
-                  <View style={styles.smallCell1}>
-                    <TouchableOpacity onPress={() => collapseSubNiti(item.niti_id)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <View style={{ width: '60%' }}>
-                        {item.niti_status === "Upcoming" ? (
-                          <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>
-                            {item.niti_name}
-                          </Text>
-                        ) : (
-                          <View style={{ width: '100%' }}>
-                            <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm")}</Text>
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଚାଲିଥିବା ସମୟ: {runningTimers[item.niti_id] || '00:00:00'}</Text>
-                            {/* {item.running_sub_niti && item.running_sub_niti.sub_niti_name &&
+        {/* Niti List */}
+        {activeTab === 'upcoming' ? (
+          <View style={styles.cell}>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              data={allNiti}
+              keyExtractor={item => item.niti_id}
+              renderItem={({ item, index }) => (
+                <View style={styles.smallCell1}>
+                  <TouchableOpacity onPress={() => collapseSubNiti(item.niti_id)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ width: '60%' }}>
+                      {item.niti_status === "Upcoming" ? (
+                        <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>
+                          {item.niti_name}
+                        </Text>
+                      ) : (
+                        <View style={{ width: '100%' }}>
+                          <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
+                          <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm")}</Text>
+                          <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଚାଲିଥିବା ସମୟ: {runningTimers[item.niti_id] || '00:00:00'}</Text>
+                          {/* {item.running_sub_niti && item.running_sub_niti.sub_niti_name &&
                               <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>Current Sub Niti: <Text style={{ fontWeight: 'bold', fontSize: 15 }}>{item.running_sub_niti.sub_niti_name}</Text></Text>
                             } */}
-                          </View>
-                        )}
-                      </View>
-                      <View style={{ width: '40%', alignItems: 'center' }}>
-                        {item.niti_status === "Upcoming" && index === 0 &&
-                          <TouchableOpacity
-                            style={{
-                              backgroundColor: index === 0 ? 'green' : '#ccc',
-                              paddingVertical: 7,
-                              paddingHorizontal: 10,
-                              borderRadius: 5,
-                            }}
-                            disabled={index !== 0}
-                            onPress={() => showConfirmation('start', item.niti_id)}
-                          >
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
-                          </TouchableOpacity>
-                        }
-                        {index === 0 ? (
-                          <>
-                            {(item.niti_status === "Started" || item.niti_status === "Paused") &&
-                              <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
-                                {item.niti_type === "other" ? (
+                        </View>
+                      )}
+                    </View>
+                    <View style={{ width: '40%', alignItems: 'center' }}>
+                      {item.niti_status === "Upcoming" && index === 0 &&
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: index === 0 ? 'green' : '#ccc',
+                            paddingVertical: 7,
+                            paddingHorizontal: 10,
+                            borderRadius: 5,
+                          }}
+                          disabled={index !== 0}
+                          onPress={() => showConfirmation('start', item.niti_id)}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
+                        </TouchableOpacity>
+                      }
+                      {index === 0 ? (
+                        <>
+                          {(item.niti_status === "Started" || item.niti_status === "Paused") &&
+                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                              {item.niti_type === "other" ? (
+                                <TouchableOpacity
+                                  style={{
+                                    backgroundColor: '#B7070A',
+                                    paddingVertical: 7,
+                                    paddingHorizontal: 10,
+                                    borderRadius: 5
+                                  }}
+                                  onPress={() => showConfirmation('stop', item.niti_id)}
+                                >
+                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <>
+                                  {item.niti_status === 'Paused' ? (
+                                    <TouchableOpacity
+                                      style={{
+                                        backgroundColor: '#11dcf2',
+                                        paddingVertical: 7,
+                                        paddingHorizontal: 7,
+                                        borderRadius: 5
+                                      }}
+                                      onPress={() => showConfirmation('resume', item.niti_id)}
+                                    >
+                                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Resume</Text>
+                                    </TouchableOpacity>
+                                  ) : (
+                                    <TouchableOpacity
+                                      style={{
+                                        backgroundColor: '#11dcf2',
+                                        paddingVertical: 7,
+                                        paddingHorizontal: 7,
+                                        borderRadius: 5
+                                      }}
+                                      onPress={() => showConfirmation('pause', item.niti_id)}
+                                    >
+                                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Pause</Text>
+                                    </TouchableOpacity>
+                                  )}
                                   <TouchableOpacity
                                     style={{
                                       backgroundColor: '#B7070A',
@@ -725,68 +793,43 @@ const Index = () => {
                                   >
                                     <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
                                   </TouchableOpacity>
-                                ) : (
-                                  <>
-                                    {item.niti_status === 'Paused' ? (
-                                      <TouchableOpacity
-                                        style={{
-                                          backgroundColor: '#11dcf2',
-                                          paddingVertical: 7,
-                                          paddingHorizontal: 7,
-                                          borderRadius: 5
-                                        }}
-                                        onPress={() => showConfirmation('resume', item.niti_id)}
-                                      >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Resume</Text>
-                                      </TouchableOpacity>
-                                    ) : (
-                                      <TouchableOpacity
-                                        style={{
-                                          backgroundColor: '#11dcf2',
-                                          paddingVertical: 7,
-                                          paddingHorizontal: 7,
-                                          borderRadius: 5
-                                        }}
-                                        onPress={() => showConfirmation('pause', item.niti_id)}
-                                      >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Pause</Text>
-                                      </TouchableOpacity>
-                                    )}
-                                    <TouchableOpacity
-                                      style={{
-                                        backgroundColor: '#B7070A',
-                                        paddingVertical: 7,
-                                        paddingHorizontal: 10,
-                                        borderRadius: 5
-                                      }}
-                                      onPress={() => showConfirmation('stop', item.niti_id)}
-                                    >
-                                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                                    </TouchableOpacity>
-                                  </>
-                                )}
-                              </View>
-                            }
-                          </>
-                        ) : (
-                          <TouchableOpacity
-                            style={{
-                              backgroundColor: index === 0 ? 'green' : '#ccc',
-                              paddingVertical: 7,
-                              paddingHorizontal: 10,
-                              borderRadius: 5,
-                            }}
-                            disabled={index !== 0}
-                            onPress={() => showConfirmation('start', item.niti_id)}
-                          >
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                    {/* {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />} */}
-                    {/* Sub Niti Text Area Input Box */}
-                    {/* {collapseNiti === item.niti_id && (item.niti_type === "daily" || item.niti_type === "special") && (item.niti_status === "Started" || item.niti_status === "Paused") && (
+                                </>
+                              )}
+                              {item.niti_type === "other" && item.status === "active" &&
+                                <TouchableOpacity
+                                  style={{
+                                    backgroundColor: '#B7070A',
+                                    paddingVertical: 7,
+                                    paddingHorizontal: 10,
+                                    borderRadius: 5
+                                  }}
+                                  onPress={() => showConfirmation('delete', item.niti_id)}
+                                >
+                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Delete</Text>
+                                </TouchableOpacity>
+                              }
+                            </View>
+                          }
+                        </>
+                      ) : (
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: index === 0 ? 'green' : '#ccc',
+                            paddingVertical: 7,
+                            paddingHorizontal: 10,
+                            borderRadius: 5,
+                          }}
+                          disabled={index !== 0}
+                          onPress={() => showConfirmation('start', item.niti_id)}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                  {/* {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />} */}
+                  {/* Sub Niti Text Area Input Box */}
+                  {/* {collapseNiti === item.niti_id && (item.niti_type === "daily" || item.niti_type === "special") && (item.niti_status === "Started" || item.niti_status === "Paused") && (
                       <View style={{ marginTop: 10, paddingHorizontal: 10 }}>
                         <FlatList
                           data={item.running_sub_niti}
@@ -953,8 +996,8 @@ const Index = () => {
                         </TouchableOpacity>
                       </View>
                     )} */}
-                    {/* Sub Niti List */}
-                    {/* {collapseNiti === item.niti_id && item.sub_nitis.length > 0 && (
+                  {/* Sub Niti List */}
+                  {/* {collapseNiti === item.niti_id && item.sub_nitis.length > 0 && (
                       item.sub_nitis
                         .filter(subItem => subItem.status === "Upcoming" || subItem.status === "Running")
                         .map((subItem) => (
@@ -1007,71 +1050,70 @@ const Index = () => {
                           </View>
                         ))
                     )} */}
-                  </View>
-                )}
-              />
-              {allNiti.length === 0 && (
-                <View style={{ alignItems: 'center', marginTop: 20 }}>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: '#B7070A',
-                      paddingVertical: 12,
-                      paddingHorizontal: 30,
-                      borderRadius: 8,
-                      elevation: 3
-                    }}
-                    onPress={() => endNiti()}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>End of Niti</Text>
-                  </TouchableOpacity>
                 </View>
               )}
-            </ScrollView>
-          ) : (
-            <ScrollView style={styles.cell}>
-              <FlatList
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={false}
-                data={[...completedNiti].reverse()}
-                keyExtractor={(item, index) => `main-${item.niti_id}-${index}`}
-                renderItem={({ item }) => (
-                  <View style={[styles.smallCell1, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
-                    <View style={{ width: '60%' }}>
-                      <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
-                      <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                      <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ବନ୍ଦ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                      {(() => {
-                        const start = moment(item.start_time, "HH:mm:ss");
-                        let end = moment(item.end_time, "HH:mm:ss");
+            />
+            {allNiti.length === 0 && (
+              <View style={{ alignItems: 'center', marginTop: 20 }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#B7070A',
+                    paddingVertical: 12,
+                    paddingHorizontal: 30,
+                    borderRadius: 8,
+                    elevation: 3
+                  }}
+                  onPress={() => endNiti()}
+                >
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>End of Niti</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.cell}>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              data={[...completedNiti].reverse()}
+              keyExtractor={(item, index) => `main-${item.niti_id}-${index}`}
+              renderItem={({ item }) => (
+                <View style={[styles.smallCell1, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+                  <View style={{ width: '60%' }}>
+                    <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
+                    <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                    <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ବନ୍ଦ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                    {(() => {
+                      const start = moment(item.start_time, "HH:mm:ss");
+                      let end = moment(item.end_time, "HH:mm:ss");
 
-                        if (end.isBefore(start)) {
-                          end.add(1, 'day'); // Add 1 day if end is before start
-                        }
+                      if (end.isBefore(start)) {
+                        end.add(1, 'day'); // Add 1 day if end is before start
+                      }
 
-                        const duration = moment.duration(end.diff(start));
+                      const duration = moment.duration(end.diff(start));
 
-                        const hours = String(duration.hours()).padStart(2, '0');
-                        const minutes = String(duration.minutes()).padStart(2, '0');
-                        const seconds = String(duration.seconds()).padStart(2, '0');
+                      const hours = String(duration.hours()).padStart(2, '0');
+                      const minutes = String(duration.minutes()).padStart(2, '0');
+                      const seconds = String(duration.seconds()).padStart(2, '0');
 
-                        return (
-                          <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>
-                            ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
-                          </Text>
-                        );
-                      })()}
-                      {/* <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>Total Duration: {moment.duration(moment(item.end_time, "HH:mm:ss").diff(moment(item.start_time, "HH:mm:ss"))).humanize()}</Text> */}
-                    </View>
-                    <View style={{ width: '40%', alignItems: 'center' }}>
-                      <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>
-                    </View>
+                      return (
+                        <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>
+                          ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
+                        </Text>
+                      );
+                    })()}
+                    {/* <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>Total Duration: {moment.duration(moment(item.end_time, "HH:mm:ss").diff(moment(item.start_time, "HH:mm:ss"))).humanize()}</Text> */}
                   </View>
-                )}
-              />
-            </ScrollView>
-          )
+                  <View style={{ width: '40%', alignItems: 'center' }}>
+                    <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>
+                  </View>
+                </View>
+              )}
+            />
+          </View>
         )}
+      </ScrollView>
 
       <Modal
         visible={confirmVisible}
