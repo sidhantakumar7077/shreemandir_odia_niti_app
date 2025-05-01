@@ -207,7 +207,7 @@ const App = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Update Available</Text>
-            <Text style={styles.modalDesc}>A newer version of this app is available. Please download to continue.</Text>
+            <Text style={styles.modalDesc}>A newer version of this app is available. Please Upgrade the App to continue.</Text>
             <TouchableOpacity onPress={startDownload} style={styles.downloadButton}>
               <Text style={styles.downloadButtonText}>Download & Update</Text>
             </TouchableOpacity>
