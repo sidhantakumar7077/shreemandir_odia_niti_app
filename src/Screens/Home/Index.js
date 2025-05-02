@@ -9,6 +9,7 @@ import { base_url } from '../../../App';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import DrawerModal from '../../Components/DrawerModal';
 import NoticeBanner from '../../Components/NoticeBanner';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 const Index = () => {
 
@@ -17,6 +18,7 @@ const Index = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('upcoming');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isOtherNitiModalVisible, setIsOtherNitiModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const closeDrawer = () => { setIsDrawerOpen(false); };
@@ -320,6 +322,7 @@ const Index = () => {
         console.log('Special Niti saved:', data);
         ToastAndroid.show('Special Niti added successfully', ToastAndroid.SHORT);
         setIsModalVisible(false);
+        setIsOtherNitiModalVisible(false);
         setSelectedItem(null);
         setOtherNitiText('');
         getOtherNiti();
@@ -585,9 +588,14 @@ const Index = () => {
           </TouchableOpacity>
           <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text>
         </TouchableOpacity>
-        <View style={{ marginRight: 10 }}>
+        <View style={{}}>
+          <TouchableOpacity onPress={() => setIsOtherNitiModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>Other ନୀତି</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ marginRight: 8 }}>
           <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -700,14 +708,14 @@ const Index = () => {
         {/* Niti List */}
         {activeTab === 'upcoming' ? (
           <View style={styles.cell}>
-            <FlatList
+            <SwipeListView
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
               data={allNiti}
-              keyExtractor={item => item.niti_id}
+              keyExtractor={(item) => item.niti_id.toString()}
               renderItem={({ item, index }) => (
                 <View style={styles.smallCell1}>
-                  <TouchableOpacity onPress={() => collapseSubNiti(item.niti_id)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ width: '60%' }}>
                       {item.niti_status === "Upcoming" ? (
                         <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>
@@ -743,6 +751,19 @@ const Index = () => {
                         <>
                           {(item.niti_status === "Started" || item.niti_status === "Paused") &&
                             <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                              {item.niti_type === "other" && item.status === "active" &&
+                                <TouchableOpacity
+                                  style={{
+                                    backgroundColor: 'green',
+                                    paddingVertical: 7,
+                                    paddingHorizontal: 10,
+                                    borderRadius: 5
+                                  }}
+                                  onPress={() => showConfirmation('start', item.niti_id)}
+                                >
+                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
+                                </TouchableOpacity>
+                              }
                               {item.niti_type === "other" ? (
                                 <TouchableOpacity
                                   style={{
@@ -795,19 +816,6 @@ const Index = () => {
                                   </TouchableOpacity>
                                 </>
                               )}
-                              {item.niti_type === "other" && item.status === "active" &&
-                                <TouchableOpacity
-                                  style={{
-                                    backgroundColor: '#B7070A',
-                                    paddingVertical: 7,
-                                    paddingHorizontal: 10,
-                                    borderRadius: 5
-                                  }}
-                                  onPress={() => showConfirmation('delete', item.niti_id)}
-                                >
-                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Delete</Text>
-                                </TouchableOpacity>
-                              }
                             </View>
                           }
                         </>
@@ -826,7 +834,7 @@ const Index = () => {
                         </TouchableOpacity>
                       )}
                     </View>
-                  </TouchableOpacity>
+                  </View>
                   {/* {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />} */}
                   {/* Sub Niti Text Area Input Box */}
                   {/* {collapseNiti === item.niti_id && (item.niti_type === "daily" || item.niti_type === "special") && (item.niti_status === "Started" || item.niti_status === "Paused") && (
@@ -1052,6 +1060,19 @@ const Index = () => {
                     )} */}
                 </View>
               )}
+              renderHiddenItem={({ item }) =>
+                item.niti_type === "other" && item.status === "active" ? (
+                  <View style={styles.rowBack}>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => showConfirmation('delete', item.niti_id)}
+                    >
+                      <FontAwesome name="trash" size={30} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                ) : null
+              }
+              rightOpenValue={-80}
             />
             {allNiti.length === 0 && (
               <View style={{ alignItems: 'center', marginTop: 20 }}>
@@ -1192,6 +1213,50 @@ const Index = () => {
             />
 
             {/* Other Special Niti Input */}
+            {/* <TextInput
+              placeholder="ଏହିଠାରେ ଲେଖନ୍ତୁ..."
+              placeholderTextColor="#888"
+              value={otherNitiText}
+              onChangeText={text => {
+                setOtherNitiText(text);
+                if (text.length >= 4) setSelectedItem(null);
+              }}
+              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
+            /> */}
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              onPress={handleSubmitOtherNiti}
+              disabled={!selectedItem && otherNitiText.trim().length < 4}
+              style={{
+                borderRadius: 8,
+                paddingVertical: 12,
+                alignItems: 'center',
+                backgroundColor:
+                  selectedItem || otherNitiText.trim().length >= 4 ? '#B7070A' : '#ccc'
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isOtherNitiModalVisible}
+        onRequestClose={() => setIsOtherNitiModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 20 }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 15, padding: 20, elevation: 10 }}>
+            {/* Close Icon */}
+            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => setIsOtherNitiModalVisible(false)}>
+              <Ionicons name="close" color="#000" size={28} />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
+
+            {/* Other Special Niti Input */}
             <TextInput
               placeholder="ଏହିଠାରେ ଲେଖନ୍ତୁ..."
               placeholderTextColor="#888"
@@ -1206,13 +1271,13 @@ const Index = () => {
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitOtherNiti}
-              disabled={!selectedItem && otherNitiText.trim().length < 4}
+              disabled={otherNitiText.trim().length < 3}
               style={{
                 borderRadius: 8,
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  selectedItem || otherNitiText.trim().length >= 4 ? '#B7070A' : '#ccc'
+                  otherNitiText.trim().length >= 3 ? '#B7070A' : '#ccc'
               }}
             >
               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
@@ -1349,5 +1414,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#fff',
     fontWeight: '600',
+  },
+  rowBack: {
+    alignItems: 'flex-end',
+    backgroundColor: '#ff3b30',
+    flex: 1,
+    justifyContent: 'flex-end',
+    marginTop: 15,
+    borderRadius: 12,
+  },
+  deleteButton: {
+    backgroundColor: '#ff3b30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: 80,
+    borderRadius: 12,
+  },
+  deleteText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
