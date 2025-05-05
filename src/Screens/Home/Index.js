@@ -5,11 +5,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Fontisto from 'react-native-vector-icons/Fontisto';
 import { base_url } from '../../../App';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import DrawerModal from '../../Components/DrawerModal';
 import NoticeBanner from '../../Components/NoticeBanner';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 
 const Index = () => {
 
@@ -19,6 +20,8 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isOtherNitiModalVisible, setIsOtherNitiModalVisible] = useState(false);
+  const [isSuchanaModalVisible, setIsSuchanaModalVisible] = useState(false);
+  const [suchanaText, setSuchanaText] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const closeDrawer = () => { setIsDrawerOpen(false); };
@@ -37,6 +40,7 @@ const Index = () => {
 
   const [spinner, setSpinner] = useState(false);
   const [allNiti, setAllNiti] = useState([]);
+  const [suchana, setSuchana] = useState(null);
   const [completedNiti, setCompletedNiti] = useState([]);
   const [otherNiti, setOtherNiti] = useState([]);
   const [otherNitiText, setOtherNitiText] = useState('');
@@ -135,7 +139,8 @@ const Index = () => {
         setSpinner(false);
         const filteredNiti = responseData.data.filter(item => item.niti_status !== "Completed");
         setAllNiti(filteredNiti);
-        // console.log("All Niti", responseData.data);
+        setSuchana(responseData.niti_info);
+        // console.log("All Niti", filteredNiti);
       }
     } catch (error) {
       console.log(error);
@@ -368,6 +373,69 @@ const Index = () => {
     }
   };
 
+  const handleSubmitSuchana = async () => {
+    // const token = await AsyncStorage.getItem('storeAccesstoken');
+    try {
+      const response = await fetch(base_url + 'api/niti-information', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          niti_notice: suchanaText,
+        }),
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getNotice();
+        setSuchanaText('');
+        setIsSuchanaModalVisible(false);
+        console.log("Notice added successfully", responseData);
+        ToastAndroid.show('Notice added successfully', ToastAndroid.SHORT);
+      } else {
+        console.log("Error", responseData);
+        ToastAndroid.show('Error adding Notice', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.log("Error", error);
+      ToastAndroid.show('Error adding Notice', ToastAndroid.SHORT);
+    }
+  };
+
+  const handleDeleteSuchana = async (id) => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    try {
+      const response = await fetch(base_url + 'api/niti-information/' + id, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${token}`
+        },
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getNotice();
+        getCompletedNiti();
+        console.log("Notice deleted successfully", responseData);
+        ToastAndroid.show('Notice deleted successfully', ToastAndroid.SHORT);
+      } else {
+        console.log("Error", responseData);
+        ToastAndroid.show('Error deleting Notice', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.log("Error", error);
+      ToastAndroid.show('Error deleting Notice', ToastAndroid.SHORT);
+    }
+  };
+
+  const [deleteSuchanaVisible, setDeleteSuchanaVisible] = useState(false);
+
   const endNiti = async () => {
     // const token = await AsyncStorage.getItem('storeAccesstoken');
     try {
@@ -586,17 +654,24 @@ const Index = () => {
           <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={{ marginHorizontal: 10 }}>
             <FontAwesome5 name="bars" size={23} color="#fff" />
           </TouchableOpacity>
-          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text>
+          {/* <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text> */}
         </TouchableOpacity>
-        <View style={{}}>
-          <TouchableOpacity onPress={() => setIsOtherNitiModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>Other ନୀତି</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ marginRight: 8 }}>
-          <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ marginRight: 8 }}>
+            <TouchableOpacity onPress={() => setIsSuchanaModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ସୂଚନା</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginRight: 8 }}>
+            <TouchableOpacity onPress={() => setIsOtherNitiModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ବିଶେଷ ନୀତି</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginRight: 8 }}>
+            <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ଅକସ୍ମାତ୍ ନୀତି</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
@@ -604,8 +679,29 @@ const Index = () => {
         {notice && notice.notice_name &&
           <NoticeBanner noticeText={notice.notice_name} />
         }
+        {suchana && suchana.niti_notice && (
+          <SwipeRow
+            rightOpenValue={-80}
+            disableRightSwipe
+            style={{ marginTop: 1 }}
+          >
+            {/* Hidden Row (Delete Button) */}
+            <TouchableOpacity
+              style={{ justifyContent: 'center', alignItems: 'flex-end', backgroundColor: '#B7070A', height: '100%', paddingRight: 20 }}
+              onPress={() => setDeleteSuchanaVisible(true)}
+            >
+              <FontAwesome name="trash" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Front Row (Notice Display) */}
+            <View style={{ backgroundColor: '#fff', padding: 10, flexDirection: 'row', alignItems: 'center' }}>
+              <Fontisto name="onenote" size={20} color="#B7070A" />
+              <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginLeft: 15 }}>{suchana.niti_notice}</Text>
+            </View>
+          </SwipeRow>
+        )}
         {/* Running Niti or previous Niti */}
-        {(allNiti.some(niti => niti.niti_status === "Started") || completedNiti.length > 0) && (
+        {/* {(allNiti.some(niti => niti.niti_status === "Started") || completedNiti.length > 0) && (
           <View style={{
             backgroundColor: '#fff',
             paddingHorizontal: 20,
@@ -620,7 +716,6 @@ const Index = () => {
             elevation: 4,
           }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              {/* Niti Info */}
               <View style={{ width: '75%' }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#341551' }}>
                   {
@@ -629,18 +724,14 @@ const Index = () => {
                     "No Niti"
                   }
                 </Text>
-                {/* Red underline */}
                 <View style={{ backgroundColor: '#fa0000', width: 80, height: 1.5, marginVertical: 8 }} />
-                {/* Date and Time Info */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-                  {/* Date */}
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="calendar-outline" size={16} color="#fa0000" />
                     <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
                       {moment().format("Do MMMM")}
                     </Text>
                   </View>
-                  {/* Start Time */}
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="time-outline" size={16} color="#fa0000" />
                     <Text style={{ color: '#979998', fontWeight: '500', marginLeft: 5 }}>
@@ -653,14 +744,12 @@ const Index = () => {
                     </Text>
                   </View>
                 </View>
-                {/* Running Time */}
                 {allNiti.find(n => n.niti_status === "Started") && (
                   <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginTop: 8 }}>
                     ⏱️ ନୀତି ଚାଲିଥିବା ସମୟ: <Text style={{ color: '#fa0000' }}>{runningTimers[allNiti.find(n => n.niti_status === "Started")?.niti_id] || '00:00:00'}</Text>
                   </Text>
                 )}
               </View>
-              {/* Badge & Arrow */}
               <View style={{ alignItems: 'center' }}>
                 {allNiti.find(n => n.niti_status === "Started") ? (
                   <View style={{
@@ -683,13 +772,12 @@ const Index = () => {
                     <Text style={{ color: '#fff', fontSize: 19, fontWeight: '600', letterSpacing: 2 }}>ପୂର୍ବ ନୀତି</Text>
                   </View>
                 ) : null}
-                {/* <Ionicons name="chevron-forward" size={24} color="#fa0000" /> */}
               </View>
             </View>
           </View>
-        )}
+        )} */}
         {/* Today Date */}
-        <View style={{ backgroundColor: '#FFBE00' }}>
+        <View style={{ backgroundColor: '#FFBE00', marginTop: 1 }}>
           <View style={{ backgroundColor: '#B7070A', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
           </View>
@@ -714,11 +802,11 @@ const Index = () => {
               data={allNiti}
               keyExtractor={(item) => item.niti_id.toString()}
               renderItem={({ item, index }) => (
-                <View style={styles.smallCell1}>
+                <View style={[styles.smallCell1, { height: (index === 0 && (item.niti_status === "Started" || item.niti_status === "Paused")) ? 120 : 'auto', justifyContent: 'center', borderColor: index === 0 ? '#B7070A' : '#ddd', borderWidth: index === 0 ? 1 : 0 }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ width: '60%' }}>
                       {item.niti_status === "Upcoming" ? (
-                        <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>
+                        <Text style={{ color: '#000', fontSize: (index === 0 && (item.niti_status === "Started" || item.niti_status === "Paused")) ? 20 : 16, fontWeight: '600', textTransform: 'capitalize' }}>
                           {item.niti_name}
                         </Text>
                       ) : (
@@ -751,19 +839,6 @@ const Index = () => {
                         <>
                           {(item.niti_status === "Started" || item.niti_status === "Paused") &&
                             <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
-                              {item.niti_type === "other" && item.status === "active" &&
-                                <TouchableOpacity
-                                  style={{
-                                    backgroundColor: 'green',
-                                    paddingVertical: 7,
-                                    paddingHorizontal: 10,
-                                    borderRadius: 5
-                                  }}
-                                  onPress={() => showConfirmation('start', item.niti_id)}
-                                >
-                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
-                                </TouchableOpacity>
-                              }
                               {item.niti_type === "other" ? (
                                 <TouchableOpacity
                                   style={{
@@ -1168,6 +1243,40 @@ const Index = () => {
       </Modal>
 
       <Modal
+        visible={deleteSuchanaVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteSuchanaVisible(false)}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="alert-circle-outline" size={48} color="#FF5722" />
+            <Text style={styles.modalTitle}>ନିଶ୍ଚିତ କରନ୍ତୁ</Text>
+            <Text style={styles.modalMessage}>
+              ଆପଣ ଏହି ସୂଚନାକୁ ବିଲୋପ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି ?
+            </Text>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={() => setDeleteSuchanaVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  handleDeleteSuchana(suchana.id);
+                  setDeleteSuchanaVisible(false);
+                }}
+                style={styles.confirmButton}
+              >
+                <Text style={styles.confirmText}>Yes, Proceed</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
@@ -1285,6 +1394,48 @@ const Index = () => {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isSuchanaModalVisible}
+        onRequestClose={() => setIsSuchanaModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 20 }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 15, padding: 20, elevation: 10 }}>
+            {/* Close Icon */}
+            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => setIsSuchanaModalVisible(false)}>
+              <Ionicons name="close" color="#000" size={28} />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ସୂଚନା</Text>
+
+            {/* Suchana Input */}
+            <TextInput
+              placeholder="ଏହିଠାରେ ଲେଖନ୍ତୁ..."
+              placeholderTextColor="#888"
+              value={suchanaText}
+              onChangeText={text => setSuchanaText(text)}
+              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
+            />
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              onPress={handleSubmitSuchana}
+              disabled={suchanaText.trim().length < 3}
+              style={{
+                borderRadius: 8,
+                paddingVertical: 12,
+                alignItems: 'center',
+                backgroundColor:
+                  suchanaText.trim().length >= 3 ? '#B7070A' : '#ccc'
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
