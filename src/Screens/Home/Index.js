@@ -679,27 +679,6 @@ const Index = () => {
         {notice && notice.notice_name &&
           <NoticeBanner noticeText={notice.notice_name} />
         }
-        {suchana && suchana.niti_notice && (
-          <SwipeRow
-            rightOpenValue={-80}
-            disableRightSwipe
-            style={{ marginTop: 1 }}
-          >
-            {/* Hidden Row (Delete Button) */}
-            <TouchableOpacity
-              style={{ justifyContent: 'center', alignItems: 'flex-end', backgroundColor: '#B7070A', height: '100%', paddingRight: 20 }}
-              onPress={() => setDeleteSuchanaVisible(true)}
-            >
-              <FontAwesome name="trash" size={20} color="#fff" />
-            </TouchableOpacity>
-
-            {/* Front Row (Notice Display) */}
-            <View style={{ backgroundColor: '#fff', padding: 10, flexDirection: 'row', alignItems: 'center' }}>
-              <Fontisto name="onenote" size={20} color="#B7070A" />
-              <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginLeft: 15 }}>{suchana.niti_notice}</Text>
-            </View>
-          </SwipeRow>
-        )}
         {/* Running Niti or previous Niti */}
         {/* {(allNiti.some(niti => niti.niti_status === "Started") || completedNiti.length > 0) && (
           <View style={{
@@ -782,6 +761,27 @@ const Index = () => {
             <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
           </View>
         </View>
+        {suchana && suchana.niti_notice && (
+          <SwipeRow
+            rightOpenValue={-50}
+            disableRightSwipe
+            style={{ marginTop: 1 }}
+          >
+            {/* Hidden Row (Delete Button) */}
+            <TouchableOpacity
+              style={{ justifyContent: 'center', alignItems: 'flex-end', backgroundColor: '#B7070A', height: '100%', paddingRight: 15 }}
+              onPress={() => setDeleteSuchanaVisible(true)}
+            >
+              <FontAwesome name="trash" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Front Row (Notice Display) */}
+            <View style={{ backgroundColor: '#fff', padding: 10, flexDirection: 'row', alignItems: 'center' }}>
+              <Fontisto name="onenote" size={20} color="#e65100" />
+              <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginLeft: 15 }}>{suchana.niti_notice}</Text>
+            </View>
+          </SwipeRow>
+        )}
         {/* Tabs for Upcoming and Completed Niti */}
         <View style={{ backgroundColor: '#FFBE00', width: '100%', flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity onPress={() => setActiveTab('upcoming')} style={{ width: '50%', alignItems: 'center', padding: 10 }}>
