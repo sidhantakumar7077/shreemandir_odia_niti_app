@@ -659,14 +659,14 @@ const Index = () => {
       <View style={styles.headerPart}>
         <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={{ marginHorizontal: 10 }}>
-            <FontAwesome5 name="bars" size={23} color="#fff" />
+            <FontAwesome5 name="bars" size={25} color="#fff" />
           </TouchableOpacity>
           {/* <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>ଦୈନିକ ନୀତି</Text> */}
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ marginRight: 8 }}>
             <TouchableOpacity onPress={() => setIsSuchanaModalVisible(true)} style={{ backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ସୂଚନା</Text>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>ନୀତି ସୂଚନା</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginRight: 8 }}>
