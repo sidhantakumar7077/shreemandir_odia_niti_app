@@ -208,9 +208,11 @@ const Index = () => {
       const responseData = await response.json();
       if (responseData.status) {
         getAllNiti();
+        getCompletedNiti();
         console.log("Niti started successfully", responseData);
       } else {
         getAllNiti();
+        getCompletedNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -236,9 +238,11 @@ const Index = () => {
       const responseData = await response.json();
       if (responseData.status) {
         getAllNiti();
+        getCompletedNiti();
         console.log("Niti paused successfully", responseData);
       } else {
         getAllNiti();
+        getCompletedNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -263,9 +267,11 @@ const Index = () => {
       const responseData = await response.json();
       if (responseData.status) {
         getAllNiti();
+        getCompletedNiti();
         console.log("Niti resumed successfully", responseData);
       } else {
         getAllNiti();
+        getCompletedNiti();
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -294,6 +300,7 @@ const Index = () => {
         console.log("Niti stopped successfully", responseData);
       } else {
         getAllNiti();
+        getCompletedNiti();
         console.log("Error", responseData);
       }
     } catch (error) {

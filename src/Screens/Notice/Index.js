@@ -91,9 +91,11 @@ const Index = () => {
     };
 
     const handleEditNotice = (notice) => {
+        const today = new Date();
+
         setNoticeText(notice.notice_name);
-        setNoticeStartDate(new Date(notice.start_date));
-        setNoticeEndDate(new Date(notice.end_date));
+        setNoticeStartDate(notice.start_date ? new Date(notice.start_date) : today);
+        setNoticeEndDate(notice.end_date ? new Date(notice.end_date) : today);
         setEditNoticeId(notice.id);
         setIsEditMode(true);
         setIsModalVisible(true);
@@ -127,6 +129,12 @@ const Index = () => {
             ToastAndroid.show('Error deleting notice', ToastAndroid.SHORT);
         }
         setShowDeleteModal(false);
+    };
+
+    const handleCancel = () => {
+        setIsModalVisible(false)
+        setNoticeStartDate(new Date());
+        setNoticeEndDate(new Date());
     };
 
     const renderItem = ({ item, index }) => (
@@ -193,7 +201,7 @@ const Index = () => {
                         <TouchableOpacity onPress={handleSaveNotice} style={styles.saveBtn}>
                             <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.cancelBtn}>
+                        <TouchableOpacity onPress={() => handleCancel()} style={styles.cancelBtn}>
                             <Text style={{ color: '#B7070A' }}>Cancel</Text>
                         </TouchableOpacity>
                     </ScrollView>
