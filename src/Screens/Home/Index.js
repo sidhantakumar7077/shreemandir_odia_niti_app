@@ -209,10 +209,12 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Niti started successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -239,10 +241,12 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Niti paused successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -268,10 +272,12 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Niti resumed successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -297,10 +303,12 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Niti stopped successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Error", responseData);
       }
     } catch (error) {
@@ -366,11 +374,13 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Other Niti deleted successfully", responseData);
         ToastAndroid.show('Other Niti deleted successfully', ToastAndroid.SHORT);
       } else {
         getAllNiti();
         getCompletedNiti();
+        setConfirmData(null);
         console.log("Error", responseData);
         ToastAndroid.show('Error deleting Other Niti', ToastAndroid.SHORT);
       }
