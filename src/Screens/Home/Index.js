@@ -642,9 +642,26 @@ const Index = () => {
         },
       });
       const responseData = await response.json();
+
       if (responseData.status) {
-        // console.log("Notice", responseData.data);
-        setNotice(responseData.data[0]);
+        // Get today's date in the same format as start_date and end_date
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+        // Filter the notices to find valid ones for today
+        const validNotices = responseData.data.filter(notice => {
+          const startDate = new Date(notice.start_date);
+          const endDate = new Date(notice.end_date);
+          return startDate <= new Date(today) && endDate >= new Date(today);
+        });
+        // console.log("Valid Notices", validNotices);
+        // Check if there are any valid notices
+        if (validNotices.length > 0) {
+          // Set the first valid notice to the state
+          setNotice(validNotices[0]);
+        } else {
+          setNotice({});
+          console.log("No valid notice for today.");
+        }
       } else {
         console.log("Error", responseData);
       }
