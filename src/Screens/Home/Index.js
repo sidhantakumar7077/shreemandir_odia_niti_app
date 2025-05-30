@@ -5,12 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Feather from 'react-native-vector-icons/Feather';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import { base_url } from '../../../App';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import DrawerModal from '../../Components/DrawerModal';
 import NoticeBanner from '../../Components/NoticeBanner';
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
+import DatePicker from 'react-native-date-picker';
 
 const Index = () => {
 
@@ -107,6 +109,63 @@ const Index = () => {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmData, setConfirmData] = useState(null);
+  const [startTimeEditModal, setStartTimeEditModal] = useState(false);
+  const [endTimeEditModal, setEndTimeEditModal] = useState(false);
+  const [selectedNiti, setSelectedNiti] = useState(null);
+  const [startTime, setStartTime] = useState(new Date());
+
+  const clickStartTimeEdit = (nitiId, startTimeStr) => {
+    const parts = startTimeStr.split(':');
+    const now = new Date();
+    now.setHours(parseInt(parts[0], 10));
+    now.setMinutes(parseInt(parts[1], 10));
+    now.setSeconds(parseInt(parts[2], 10));
+    now.setMilliseconds(0);
+
+    setSelectedNiti(nitiId);
+    setStartTime(now); // ✅ Valid Date object
+    setStartTimeEditModal(true);
+  };
+
+  const startTimeEdit = async () => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    const formattedTime = moment(startTime).format('HH:mm:ss');
+
+    try {
+      const response = await fetch(base_url + 'api/niti/edit-start-time', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          niti_management_id: selectedNiti,
+          start_time: formattedTime,
+        }),
+      });
+
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        setStartTimeEditModal(false);
+        setSelectedNiti(null);
+        setStartTime(new Date());
+        ToastAndroid.show('Start time edited successfully', ToastAndroid.SHORT);
+      } else {
+        setStartTimeEditModal(false);
+        setSelectedNiti(null);
+        ToastAndroid.show('Error editing start time', ToastAndroid.SHORT);
+        console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log("Error editing start time:", error);
+      ToastAndroid.show('Error editing start time', ToastAndroid.SHORT);
+      setStartTimeEditModal(false);
+      setSelectedNiti(null);
+    }
+  };
 
   const showConfirmation = (actionType, data) => {
     setConfirmAction(actionType);
@@ -117,8 +176,10 @@ const Index = () => {
   const handleConfirmAction = () => {
     if (confirmAction === 'start') startNiti(confirmData);
     // if (confirmAction === 'pause') pauseNiti(confirmData);
-    if (confirmAction === 'pause') setIsModalVisible(true);
-    if (confirmAction === 'resume') resumeNiti(confirmData);
+    // if (confirmAction === 'pause') setIsModalVisible(true);
+    // if (confirmAction === 'resume') resumeNiti(confirmData);
+    if (confirmAction === 'not done') notDoneNiti(confirmData);
+    if (confirmAction === 'reset') resetStartNiti(confirmData);
     if (confirmAction === 'stop') stopNiti(confirmData);
     if (confirmAction === 'delete') deleteOtherNiti(confirmData);
     setConfirmVisible(false);
@@ -285,6 +346,72 @@ const Index = () => {
     }
   };
 
+  const notDoneNiti = async (id) => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    try {
+      const response = await fetch(base_url + 'api/niti/not-done', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          niti_id: id,
+        }),
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        setConfirmData(null);
+        ToastAndroid.show('Niti marked as not done successfully', ToastAndroid.SHORT);
+        // console.log("Niti marked as not done successfully", responseData);
+      } else {
+        getAllNiti();
+        getCompletedNiti();
+        setConfirmData(null);
+        ToastAndroid.show(responseData.message || 'Error marking Niti as not done', ToastAndroid.SHORT);
+        // console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const resetStartNiti = async (id) => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    try {
+      const response = await fetch(base_url + 'api/niti/reset', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          niti_id: id,
+        }),
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        setConfirmData(null);
+        ToastAndroid.show('Niti reset successfully', ToastAndroid.SHORT);
+        console.log("Niti reset successfully", responseData);
+      } else {
+        getAllNiti();
+        getCompletedNiti();
+        setConfirmData(null);
+        ToastAndroid.show('Error resetting Niti', ToastAndroid.SHORT);
+        console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const stopNiti = async (id) => {
     const token = await AsyncStorage.getItem('storeAccesstoken');
     try {
@@ -317,7 +444,7 @@ const Index = () => {
   };
 
   const handleSubmitOtherNiti = async () => {
-    pauseNiti(confirmData);
+    // pauseNiti(confirmData);
     const token = await AsyncStorage.getItem('storeAccesstoken');
     const selectedNiti = otherNiti.find(item => item.id === selectedItem);
     const payload = {
@@ -339,8 +466,8 @@ const Index = () => {
       const data = await response.json();
 
       if (data.status) {
-        console.log('Special Niti saved:', data);
-        ToastAndroid.show('Special Niti added successfully', ToastAndroid.SHORT);
+        // console.log('Special Niti saved:', data);
+        ToastAndroid.show('Niti added successfully', ToastAndroid.SHORT);
         setIsModalVisible(false);
         setIsOtherNitiModalVisible(false);
         setSelectedItem(null);
@@ -349,10 +476,10 @@ const Index = () => {
         getAllNiti();
       } else {
         ToastAndroid.show(data.message || 'Failed to add special Niti', ToastAndroid.SHORT);
-        console.log("Error", data.message || 'Failed to add special Niti');
+        // console.log("Error", data.message || 'Failed to add special Niti');
       }
     } catch (error) {
-      console.log('Error saving special Niti:', error);
+      // console.log('Error saving special Niti:', error);
       ToastAndroid.show('Error saving special Niti', ToastAndroid.SHORT);
     }
   };
@@ -856,76 +983,116 @@ const Index = () => {
                     </View>
                     <View style={{ width: '40%', alignItems: 'center' }}>
                       {item.niti_status === "Upcoming" && index === 0 &&
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: index === 0 ? 'green' : '#ccc',
-                            paddingVertical: 7,
-                            paddingHorizontal: 10,
-                            borderRadius: 5,
-                          }}
-                          disabled={index !== 0}
-                          onPress={() => showConfirmation('start', item.niti_id)}
-                        >
-                          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor: index === 0 ? 'green' : '#ccc',
+                              paddingVertical: 7,
+                              paddingHorizontal: 10,
+                              borderRadius: 5,
+                            }}
+                            disabled={index !== 0}
+                            onPress={() => showConfirmation('start', item.niti_id)}
+                          >
+                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor: index === 0 ? '#6ea1f5' : '#ccc',
+                              paddingVertical: 7,
+                              paddingHorizontal: 10,
+                              borderRadius: 5,
+                              marginTop: 10
+                            }}
+                            disabled={index !== 0}
+                            onPress={() => showConfirmation('not done', item.niti_id)}
+                          >
+                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Not Done</Text>
+                          </TouchableOpacity>
+                        </>
                       }
                       {index === 0 ? (
                         <>
                           {(item.niti_status === "Started" || item.niti_status === "Paused") &&
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
-                              {item.niti_type === "other" ? (
-                                <TouchableOpacity
-                                  style={{
-                                    backgroundColor: '#B7070A',
-                                    paddingVertical: 7,
-                                    paddingHorizontal: 10,
-                                    borderRadius: 5
-                                  }}
-                                  onPress={() => showConfirmation('stop', item.niti_id)}
-                                >
-                                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                                </TouchableOpacity>
-                              ) : (
-                                <>
-                                  {item.niti_status === 'Paused' ? (
-                                    <TouchableOpacity
-                                      style={{
-                                        backgroundColor: '#11dcf2',
-                                        paddingVertical: 7,
-                                        paddingHorizontal: 7,
-                                        borderRadius: 5
-                                      }}
-                                      onPress={() => showConfirmation('resume', item.niti_id)}
-                                    >
-                                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Resume</Text>
-                                    </TouchableOpacity>
-                                  ) : (
-                                    <TouchableOpacity
-                                      style={{
-                                        backgroundColor: '#11dcf2',
-                                        paddingVertical: 7,
-                                        paddingHorizontal: 7,
-                                        borderRadius: 5
-                                      }}
-                                      onPress={() => showConfirmation('pause', item.niti_id)}
-                                    >
-                                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Pause</Text>
-                                    </TouchableOpacity>
-                                  )}
-                                  <TouchableOpacity
-                                    style={{
-                                      backgroundColor: '#B7070A',
-                                      paddingVertical: 7,
-                                      paddingHorizontal: 10,
-                                      borderRadius: 5
-                                    }}
-                                    onPress={() => showConfirmation('stop', item.niti_id)}
-                                  >
-                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                                  </TouchableOpacity>
-                                </>
-                              )}
+                            <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                              <TouchableOpacity
+                                style={{
+                                  backgroundColor: '#B7070A',
+                                  paddingVertical: 7,
+                                  paddingHorizontal: 10,
+                                  borderRadius: 5
+                                }}
+                                onPress={() => showConfirmation('stop', item.niti_id)}
+                              >
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={{
+                                  backgroundColor: '#1a2a87',
+                                  paddingVertical: 7,
+                                  paddingHorizontal: 10,
+                                  borderRadius: 5,
+                                  marginTop: 10
+                                }}
+                                onPress={() => showConfirmation('reset', item.niti_id)}
+                              >
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Reset</Text>
+                              </TouchableOpacity>
                             </View>
+                            // <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                            //   {item.niti_type === "other" ? (
+                            //     <TouchableOpacity
+                            //       style={{
+                            //         backgroundColor: '#B7070A',
+                            //         paddingVertical: 7,
+                            //         paddingHorizontal: 10,
+                            //         borderRadius: 5
+                            //       }}
+                            //       onPress={() => showConfirmation('stop', item.niti_id)}
+                            //     >
+                            //       <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
+                            //     </TouchableOpacity>
+                            //   ) : (
+                            //     <>
+                            //       {item.niti_status === 'Paused' ? (
+                            //         <TouchableOpacity
+                            //           style={{
+                            //             backgroundColor: '#11dcf2',
+                            //             paddingVertical: 7,
+                            //             paddingHorizontal: 7,
+                            //             borderRadius: 5
+                            //           }}
+                            //           onPress={() => showConfirmation('resume', item.niti_id)}
+                            //         >
+                            //           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Resume</Text>
+                            //         </TouchableOpacity>
+                            //       ) : (
+                            //         <TouchableOpacity
+                            //           style={{
+                            //             backgroundColor: '#11dcf2',
+                            //             paddingVertical: 7,
+                            //             paddingHorizontal: 7,
+                            //             borderRadius: 5
+                            //           }}
+                            //           onPress={() => showConfirmation('pause', item.niti_id)}
+                            //         >
+                            //           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Pause</Text>
+                            //         </TouchableOpacity>
+                            //       )}
+                            //       <TouchableOpacity
+                            //         style={{
+                            //           backgroundColor: '#B7070A',
+                            //           paddingVertical: 7,
+                            //           paddingHorizontal: 10,
+                            //           borderRadius: 5
+                            //         }}
+                            //         onPress={() => showConfirmation('stop', item.niti_id)}
+                            //       >
+                            //         <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
+                            //       </TouchableOpacity>
+                            //     </>
+                            //   )}
+                            // </View>
                           }
                         </>
                       ) : (
@@ -1207,36 +1374,53 @@ const Index = () => {
               scrollEnabled={false}
               data={[...completedNiti].reverse()}
               keyExtractor={(item, index) => `main-${item.niti_id}-${index}`}
-              renderItem={({ item }) => (
+              renderItem={({ item, index }) => (
                 <View style={[styles.smallCell1, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
                   <View style={{ width: '60%' }}>
                     <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
-                    <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                    <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ବନ୍ଦ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                    {(() => {
-                      const start = moment(item.start_time, "HH:mm:ss");
-                      let end = moment(item.end_time, "HH:mm:ss");
+                    <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+                      <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                      <TouchableOpacity onPress={() => { clickStartTimeEdit(item.id, item.start_time) }}>
+                        <Feather name="edit-3" size={18} color="#000" style={{ marginHorizontal: 5 }} />
+                      </TouchableOpacity>
+                    </View>
+                    {item.niti_status === "Completed" &&
+                      <>
+                        <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+                          <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                          <TouchableOpacity onPress={() => { }}>
+                            <Feather name="edit-3" size={18} color="#000" style={{ marginHorizontal: 5 }} />
+                          </TouchableOpacity>
+                        </View>
+                        {(() => {
+                          const start = moment(item.start_time, "HH:mm:ss");
+                          let end = moment(item.end_time, "HH:mm:ss");
 
-                      if (end.isBefore(start)) {
-                        end.add(1, 'day'); // Add 1 day if end is before start
-                      }
+                          if (end.isBefore(start)) {
+                            end.add(1, 'day'); // Add 1 day if end is before start
+                          }
 
-                      const duration = moment.duration(end.diff(start));
+                          const duration = moment.duration(end.diff(start));
 
-                      const hours = String(duration.hours()).padStart(2, '0');
-                      const minutes = String(duration.minutes()).padStart(2, '0');
-                      const seconds = String(duration.seconds()).padStart(2, '0');
+                          const hours = String(duration.hours()).padStart(2, '0');
+                          const minutes = String(duration.minutes()).padStart(2, '0');
+                          const seconds = String(duration.seconds()).padStart(2, '0');
 
-                      return (
-                        <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>
-                          ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
-                        </Text>
-                      );
-                    })()}
+                          return (
+                            <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, marginTop: 5 }}>
+                              <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>
+                                ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
+                              </Text>
+                            </View>
+                          );
+                        })()}
+                      </>
+                    }
                     {/* <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>Total Duration: {moment.duration(moment(item.end_time, "HH:mm:ss").diff(moment(item.start_time, "HH:mm:ss"))).humanize()}</Text> */}
                   </View>
                   <View style={{ width: '40%', alignItems: 'center' }}>
-                    <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>
+                    {item.niti_status === "Completed" && <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>}
+                    {item.niti_status === "Started" && <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ଚାଲୁଛି</Text>}
                   </View>
                 </View>
               )}
@@ -1244,6 +1428,51 @@ const Index = () => {
           </View>
         )}
       </ScrollView>
+
+      <Modal visible={startTimeEditModal} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 20, paddingTop: 10, alignItems: 'center', elevation: 5, width: 300, position: 'relative' }}>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              onPress={() => setStartTimeEditModal(false)}
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                zIndex: 10,
+                padding: 5,
+              }}
+            >
+              <Text style={{ fontSize: 18, color: '#000' }}>✕</Text>
+              {/* Or use Icon like Feather name="x" */}
+            </TouchableOpacity>
+
+            <DatePicker
+              mode="time"
+              date={startTime}
+              onDateChange={setStartTime}
+              textColor="#000"
+              androidVariant="iosClone"
+              is24hourSource="locale"
+              locale="en-GB"
+            />
+
+            <TouchableOpacity
+              style={{
+                marginTop: 15,
+                backgroundColor: '#051b65',
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 50
+              }}
+              onPress={startTimeEdit}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Set Start Time</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={confirmVisible}
