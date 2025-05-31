@@ -431,7 +431,7 @@ const Index = () => {
       } else {
         getAllNiti();
         getCompletedNiti();
-        setConfirmData(null);
+        // setConfirmData(null);
         ToastAndroid.show(responseData.message || 'Error marking Niti as not done', ToastAndroid.SHORT);
         // console.log("Error", responseData);
       }
