@@ -23,8 +23,8 @@ import Notice from './src/Screens/Notice/Index'
 
 const Stack = createNativeStackNavigator()
 
-export const base_url = "http://temple.mandirparikrama.com/"
-// export const base_url = "https://shreejagannathadham.com/"
+// export const base_url = "http://temple.mandirparikrama.com/"
+export const base_url = "https://shreejagannathadham.com/"
 
 const App = () => {
 
