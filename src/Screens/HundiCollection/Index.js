@@ -8,7 +8,7 @@ import moment from 'moment';
 const Index = () => {
     const [hundiList, setHundiList] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [hundiData, setHundiData] = useState({ rupees: '', gold: '', silver: '' });
+    const [hundiData, setHundiData] = useState({ rupees: '', gold: '', silver: '', mixedGold: '', mixedSilver: '' });
     const [hundiDate, setHundiDate] = useState(new Date());
     const [openDatePicker, setOpenDatePicker] = useState(false);
 
@@ -47,6 +47,8 @@ const Index = () => {
                 rupees: hundiData.rupees,
                 gold: `${hundiData.gold}`,
                 silver: `${hundiData.silver}`,
+                mix_gold: hundiData.mixedGold || '', // Optional field
+                mix_silver: hundiData.mixedSilver || '' // Optional field
             };
 
             // console.log("Payload to save:", payload);
@@ -64,8 +66,9 @@ const Index = () => {
             const result = await response.json();
             if (result.status) {
                 ToastAndroid.show('ସେଭ୍‍ କରାଯାଇଛି', ToastAndroid.SHORT);
-                setHundiData({ rupees: '', gold: '', silver: '' });
-                // setIsModalVisible(false);
+                setHundiData({ rupees: '', gold: '', silver: '', mixedGold: '', mixedSilver: '' });
+                setHundiDate(new Date());
+                setIsModalVisible(false);
                 getHundiCollection();
             } else {
                 ToastAndroid.show('ସେଭ୍ ହୋଇପାରିଲା ନାହିଁ', ToastAndroid.SHORT);
@@ -83,6 +86,8 @@ const Index = () => {
             rupees: hundiData.rupees,
             gold: `${hundiData.gold}`,
             silver: `${hundiData.silver}`,
+            mix_gold: hundiData.mixedGold || '', // Optional field
+            mix_silver: hundiData.mixedSilver || '' // Optional field
         };
 
         try {
@@ -108,8 +113,9 @@ const Index = () => {
             const result = JSON.parse(rawText); // Now safe to parse
             if (response.ok && result.status) {
                 ToastAndroid.show('ଅପଡେଟ୍‍ ହୋଇଛି', ToastAndroid.SHORT);
-                setHundiData({ rupees: '', gold: '', silver: '' });
-                // setIsModalVisible(false);
+                setHundiData({ rupees: '', gold: '', silver: '', mixedGold: '', mixedSilver: '' });
+                setHundiDate(new Date());
+                setIsModalVisible(false);
                 setIsEditMode(false);
                 setEditingItem(null);
                 getHundiCollection();
@@ -123,9 +129,9 @@ const Index = () => {
         }
     };
 
-    const todayDate = moment().format('YYYY-MM-DD');
-    const todaysHundiList = hundiList.filter(item => item.date === todayDate);
-    const todaysHundiListReversed = [...todaysHundiList].reverse().slice(0, 5);
+    // const todayDate = moment().format('YYYY-MM-DD');
+    // const todaysHundiList = hundiList.filter(item => item.date === todayDate);
+    const todaysHundiListReversed = [...hundiList].slice(0, 5);
 
     const renderItem = ({ item, index }) => (
         <View style={styles.card}>
@@ -139,8 +145,10 @@ const Index = () => {
                             setEditingItem(item);
                             setHundiData({
                                 rupees: item.rupees.toString(),
-                                gold: parseInt(item.gold),
-                                silver: parseInt(item.silver)
+                                gold: item.gold,
+                                silver: item.silver,
+                                mixedGold: item.mix_gold,
+                                mixedSilver: item.mix_silver
                             });
                             setHundiDate(new Date(item.date));
                         }}
@@ -151,7 +159,9 @@ const Index = () => {
             </View>
             <Text style={styles.cardText}>💰 ₹{item.rupees}</Text>
             <Text style={styles.cardText}>🥇 {item.gold}</Text>
+            {(item.mix_gold && <Text style={styles.cardText}>🥇 {item.mix_gold}</Text>)}
             <Text style={styles.cardText}>🥈 {item.silver}</Text>
+            {(item.mix_silver && <Text style={styles.cardText}>🥈 {item.mix_silver}</Text>)}
         </View>
     );
 
@@ -163,14 +173,14 @@ const Index = () => {
                     onPress={() => {
                         setIsModalVisible(true);
                         setIsEditMode(false);
-                        setHundiData({ rupees: '', gold: '', silver: '' });
+                        setHundiData({ rupees: '', gold: '', silver: '', mixedGold: '', mixedSilver: '' });
                         setHundiDate(new Date());
                     }}>
                     <Ionicons name="add-circle" size={30} color="#fff" />
                 </TouchableOpacity>
             </View>
 
-            <View style={{ marginBottom: 10, padding: 20, width: '95%', alignSelf: 'center', borderRadius: 10, backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.5, elevation: 3 }}>
+            {/* <View style={{ marginBottom: 10, padding: 20, width: '95%', alignSelf: 'center', borderRadius: 10, backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.5, elevation: 3 }}>
                 <Text style={styles.label}>ଟଙ୍କା</Text>
                 <TextInput
                     placeholder="ଟଙ୍କା"
@@ -180,19 +190,37 @@ const Index = () => {
                     style={styles.input}
                 />
 
-                <Text style={styles.label}>ସୁନା (ଗ୍ରାମ)</Text>
+                <Text style={styles.label}>ସୁନା</Text>
                 <TextInput
                     placeholder="ସୁନା"
-                    keyboardType="numeric"
+                    keyboardType="default"
                     value={hundiData.gold.toString()}
                     onChangeText={(val) => setHundiData({ ...hundiData, gold: val })}
                     style={styles.input}
                 />
 
-                <Text style={styles.label}>ରୂପା (ଗ୍ରାମ)</Text>
+                <Text style={styles.label}>ମିଶା ସୁନା</Text>
+                <TextInput
+                    placeholder="ସୁନା"
+                    keyboardType="default"
+                    value={hundiData.gold.toString()}
+                    onChangeText={(val) => setHundiData({ ...hundiData, gold: val })}
+                    style={styles.input}
+                />
+
+                <Text style={styles.label}>ରୂପା</Text>
                 <TextInput
                     placeholder="ରୂପା"
-                    keyboardType="numeric"
+                    keyboardType="default"
+                    value={hundiData.silver.toString()}
+                    onChangeText={(val) => setHundiData({ ...hundiData, silver: val })}
+                    style={styles.input}
+                />
+
+                <Text style={styles.label}>ମିଶା ରୂପା</Text>
+                <TextInput
+                    placeholder="ରୂପା"
+                    keyboardType="default"
                     value={hundiData.silver.toString()}
                     onChangeText={(val) => setHundiData({ ...hundiData, silver: val })}
                     style={styles.input}
@@ -217,7 +245,7 @@ const Index = () => {
                 <TouchableOpacity onPress={isEditMode ? handleUpdateHundi : handleSaveHundi} style={styles.saveBtn}>
                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
             <FlatList
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -227,7 +255,7 @@ const Index = () => {
                 renderItem={renderItem}
             />
 
-            {/* <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
+            <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView contentContainerStyle={styles.modalBox}>
                         <Text style={styles.modalTitle}>ଆଜିର ହୁଣ୍ଡି ସଂଗ୍ରହ</Text>
@@ -241,50 +269,68 @@ const Index = () => {
                             style={styles.input}
                         />
 
-                        <Text style={styles.label}>ସୁନା (ଗ୍ରାମ)</Text>
+                        <Text style={styles.label}>ସୁନା</Text>
                         <TextInput
                             placeholder="ସୁନା"
-                            keyboardType="numeric"
+                            keyboardType="default"
                             value={hundiData.gold.toString()}
                             onChangeText={(val) => setHundiData({ ...hundiData, gold: val })}
                             style={styles.input}
                         />
 
-                        <Text style={styles.label}>ରୂପା (ଗ୍ରାମ)</Text>
+                        <Text style={styles.label}>ମିଶା ସୁନା</Text>
+                        <TextInput
+                            placeholder="ସୁନା"
+                            keyboardType="default"
+                            value={hundiData.mixedGold.toString()}
+                            onChangeText={(val) => setHundiData({ ...hundiData, mixedGold: val })}
+                            style={styles.input}
+                        />
+
+                        <Text style={styles.label}>ରୂପା</Text>
                         <TextInput
                             placeholder="ରୂପା"
-                            keyboardType="numeric"
+                            keyboardType="default"
                             value={hundiData.silver.toString()}
                             onChangeText={(val) => setHundiData({ ...hundiData, silver: val })}
                             style={styles.input}
                         />
 
+                        <Text style={styles.label}>ମିଶା ରୂପା</Text>
+                        <TextInput
+                            placeholder="ରୂପା"
+                            keyboardType="default"
+                            value={hundiData.mixedSilver.toString()}
+                            onChangeText={(val) => setHundiData({ ...hundiData, mixedSilver: val })}
+                            style={styles.input}
+                        />
+
+                        <Text style={styles.label}>ତାରିଖ</Text>
                         <TouchableOpacity onPress={() => setOpenDatePicker(true)} style={styles.dateBtn}>
                             <Text style={{ color: '#333' }}>{moment(hundiDate).format("DD MMM YYYY")}</Text>
                         </TouchableOpacity>
+                        <DatePicker
+                            modal
+                            open={openDatePicker}
+                            date={hundiDate}
+                            mode="date"
+                            onConfirm={(date) => {
+                                setOpenDatePicker(false);
+                                setHundiDate(date);
+                            }}
+                            onCancel={() => setOpenDatePicker(false)}
+                        />
 
                         <TouchableOpacity onPress={isEditMode ? handleUpdateHundi : handleSaveHundi} style={styles.saveBtn}>
                             <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.cancelBtn}>
+                        <TouchableOpacity onPress={() => {setIsModalVisible(false); setIsEditMode(false); setEditingItem(null);}} style={styles.cancelBtn}>
                             <Text style={{ color: '#B7070A' }}>Cancel</Text>
                         </TouchableOpacity>
                     </ScrollView>
-
-                    <DatePicker
-                        modal
-                        open={openDatePicker}
-                        date={hundiDate}
-                        mode="date"
-                        onConfirm={(date) => {
-                            setOpenDatePicker(false);
-                            setHundiDate(date);
-                        }}
-                        onCancel={() => setOpenDatePicker(false)}
-                    />
                 </View>
-            </Modal> */}
+            </Modal>
         </View>
     );
 };
@@ -342,7 +388,7 @@ const styles = StyleSheet.create({
     modalBox: {
         backgroundColor: '#fff',
         marginHorizontal: 20,
-        marginTop: 80,
+        marginTop: 20,
         borderRadius: 14,
         padding: 20
     },

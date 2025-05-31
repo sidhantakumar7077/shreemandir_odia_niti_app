@@ -36,6 +36,7 @@ const Index = () => {
       getCompletedNiti();
       getOtherNiti();
       getNotice();
+      getDarshan();
       console.log("Refreshing Successful");
     }, 2000);
   }, []);
@@ -113,6 +114,9 @@ const Index = () => {
   const [endTimeEditModal, setEndTimeEditModal] = useState(false);
   const [selectedNiti, setSelectedNiti] = useState(null);
   const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
+  const [niti_notDone_reasonModal, setNiti_notDone_reasonModal] = useState(false);
+  const [niti_notDone_reason, setNiti_notDone_reason] = useState('');
 
   const clickStartTimeEdit = (nitiId, startTimeStr) => {
     const parts = startTimeStr.split(':');
@@ -167,6 +171,60 @@ const Index = () => {
     }
   };
 
+  const clickEndTimeEdit = (nitiId, endTimeStr) => {
+    const parts = endTimeStr.split(':');
+    const now = new Date();
+    now.setHours(parseInt(parts[0], 10));
+    now.setMinutes(parseInt(parts[1], 10));
+    now.setSeconds(parseInt(parts[2], 10));
+    now.setMilliseconds(0);
+    setSelectedNiti(nitiId);
+    setEndTime(now); // ✅ Valid Date object
+    setEndTimeEditModal(true);
+  };
+
+  const endTimeEdit = async () => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    const formattedTime = moment(endTime).format('HH:mm:ss');
+    // console.log("Selected Niti for End Time Edit:", selectedNiti, formattedTime);
+    // return;
+
+    try {
+      const response = await fetch(base_url + 'api/niti/edit-end-time', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          niti_management_id: selectedNiti,
+          end_time: formattedTime,
+        }),
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        setEndTimeEditModal(false);
+        setSelectedNiti(null);
+        setStartTime(new Date());
+        ToastAndroid.show('End time edited successfully', ToastAndroid.SHORT);
+        // console.log("End time edited successfully", responseData);
+      } else {
+        setEndTimeEditModal(false);
+        setSelectedNiti(null);
+        ToastAndroid.show('Error editing end time', ToastAndroid.SHORT);
+        console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log("Error editing end time:", error);
+      ToastAndroid.show('Error editing end time', ToastAndroid.SHORT);
+      setEndTimeEditModal(false);
+      setSelectedNiti(null);
+    }
+  };
+
   const showConfirmation = (actionType, data) => {
     setConfirmAction(actionType);
     setConfirmData(data);
@@ -178,7 +236,7 @@ const Index = () => {
     // if (confirmAction === 'pause') pauseNiti(confirmData);
     // if (confirmAction === 'pause') setIsModalVisible(true);
     // if (confirmAction === 'resume') resumeNiti(confirmData);
-    if (confirmAction === 'not done') notDoneNiti(confirmData);
+    if (confirmAction === 'not done') setNiti_notDone_reasonModal(true);
     if (confirmAction === 'reset') resetStartNiti(confirmData);
     if (confirmAction === 'stop') stopNiti(confirmData);
     if (confirmAction === 'delete') deleteOtherNiti(confirmData);
@@ -349,7 +407,7 @@ const Index = () => {
   const notDoneNiti = async (id) => {
     const token = await AsyncStorage.getItem('storeAccesstoken');
     try {
-      const response = await fetch(base_url + 'api/niti/not-done', {
+      const response = await fetch(base_url + 'api/niti/not-started', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -358,6 +416,7 @@ const Index = () => {
         },
         body: JSON.stringify({
           niti_id: id,
+          niti_not_done_reason: niti_notDone_reason,
         }),
       });
       const responseData = await response.json();
@@ -365,6 +424,8 @@ const Index = () => {
         getAllNiti();
         getCompletedNiti();
         setConfirmData(null);
+        setNiti_notDone_reasonModal(false);
+        setNiti_notDone_reason('');
         ToastAndroid.show('Niti marked as not done successfully', ToastAndroid.SHORT);
         // console.log("Niti marked as not done successfully", responseData);
       } else {
@@ -797,12 +858,83 @@ const Index = () => {
     }
   };
 
+  const [allDarshan, setAllDarshan] = useState([]);
+  const [currentDarshan, setCurrentDarshan] = useState(null);
+  const [editDarshanModal, setEditDarshanModal] = useState(false);
+  const [selectedDarshanId, setSelectedDarshanId] = useState(null);
+
+  const getDarshan = async () => {
+    try {
+      const response = await fetch(base_url + 'api/darshan/started-data', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        // console.log("Darshan Data", responseData.data);
+        setAllDarshan(responseData.data);
+        // Find the first one with darshan_status === "Started"
+        const activeDarshan = responseData.data.find(item => item.darshan_status === "Started");
+        setCurrentDarshan(activeDarshan || null);
+      } else {
+        console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log("Error fetching darshan data:", error);
+    }
+  };
+
+  const editDarshan = async () => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    // console.log("Edit Darshan Request Body:", {
+    //   darshan_id: selectedDarshanId,
+    //   action: selectedDarshanId ? 'start' : 'closed',
+    // });
+    // return;
+
+    try {
+      const response = await fetch(base_url + 'api/darshan/edit', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          darshan_id: selectedDarshanId,
+          action: selectedDarshanId ? 'start' : 'closed',
+        }),
+      });
+
+      const responseData = await response.json();
+      if (responseData.status) {
+        getDarshan();
+        setEditDarshanModal(false);
+        setSelectedDarshanId(null);
+        console.log("Darshan edited successfully", responseData);
+        ToastAndroid.show('Darshan edited successfully', ToastAndroid.SHORT);
+      } else {
+        console.log("Error", responseData);
+        ToastAndroid.show('Error editing Darshan', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.log("Error editing Darshan:", error);
+      ToastAndroid.show('Error editing Darshan', ToastAndroid.SHORT);
+      setEditDarshanModal(false);
+      setSelectedDarshanId(null);
+    }
+  };
+
   useEffect(() => {
     if (isFocused) {
       getAllNiti();
       getCompletedNiti();
       getOtherNiti();
       getNotice();
+      getDarshan();
     }
   }, [isFocused]);
 
@@ -922,6 +1054,46 @@ const Index = () => {
             <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
           </View>
         </View>
+        {/* Current Darshan */}
+        {currentDarshan ?
+          <View style={styles.cell}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
+              <View style={{ width: '60%' }}>
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>
+                  ଚାଲୁଥିବା ଦର୍ଶନ: {currentDarshan.darshan_name}
+                </Text>
+              </View>
+              <View style={{ width: '40%', alignItems: 'center' }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedDarshanId(currentDarshan?.id);
+                    setEditDarshanModal(true);
+                  }}
+                  style={{ backgroundColor: '#B7070A', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>ଦର୍ଶନ ପରିବର୍ତ୍ତନ</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          : (
+            <View style={styles.cell}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ ବନ୍ଦ ଅଛି</Text>
+                <View style={{ width: '40%', alignItems: 'center' }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedDarshanId(null);
+                      setEditDarshanModal(true);
+                    }}
+                    style={{ backgroundColor: '#B7070A', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>ଦର୍ଶନ ପରିବର୍ତ୍ତନ</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
         {suchana && suchana.niti_notice && (
           <SwipeRow
             rightOpenValue={-50}
@@ -1374,53 +1546,105 @@ const Index = () => {
               scrollEnabled={false}
               data={[...completedNiti].reverse()}
               keyExtractor={(item, index) => `main-${item.niti_id}-${index}`}
-              renderItem={({ item, index }) => (
-                <View style={[styles.smallCell1, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
-                  <View style={{ width: '60%' }}>
-                    <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textTransform: 'capitalize' }}>{item.niti_name}</Text>
-                    <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
-                      <Text style={{ color: '#000', fontSize: 14, fontWeight: '400' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                      <TouchableOpacity onPress={() => { clickStartTimeEdit(item.id, item.start_time) }}>
-                        <Feather name="edit-3" size={18} color="#000" style={{ marginHorizontal: 5 }} />
+              renderItem={({ item }) => (
+                <View style={{
+                  backgroundColor: '#fff',
+                  marginBottom: 12,
+                  padding: 15,
+                  borderRadius: 12,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: '700', marginBottom: 5 }}>
+                    {item.niti_name}
+                  </Text>
+
+                  {/* Start Time Block */}
+                  <View style={{ marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 14, color: '#333' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                      <TouchableOpacity onPress={() => clickStartTimeEdit(item.id, item.start_time)}>
+                        <Feather name="edit-3" size={18} color="#555" />
                       </TouchableOpacity>
                     </View>
-                    {item.niti_status === "Completed" &&
-                      <>
-                        <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
-                          <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                          <TouchableOpacity onPress={() => { }}>
-                            <Feather name="edit-3" size={18} color="#000" style={{ marginHorizontal: 5 }} />
+                    {item.start_user_id && (
+                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                        ➤ ଆରମ୍ଭ: {item.start_user_id}
+                      </Text>
+                    )}
+                    {item.start_time_edit_user_id && (
+                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                        ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id}
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* End Time Block */}
+                  {item.niti_status === "Completed" && (
+                    <>
+                      <View style={{ marginBottom: 8 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 14, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                          <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.end_time)}>
+                            <Feather name="edit-3" size={18} color="#555" />
                           </TouchableOpacity>
                         </View>
+                        {item.end_user_id && (
+                          <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                            ➤ ସମାପନ: {item.end_user_id}
+                          </Text>
+                        )}
+                        {item.end_time_edit_user_id && (
+                          <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                            ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id}
+                          </Text>
+                        )}
+                      </View>
+
+                      {/* Duration */}
+                      <View style={{
+                        backgroundColor: '#f0f4ff',
+                        padding: 8,
+                        borderRadius: 8,
+                        alignSelf: 'flex-start',
+                        marginBottom: 10,
+                      }}>
                         {(() => {
                           const start = moment(item.start_time, "HH:mm:ss");
                           let end = moment(item.end_time, "HH:mm:ss");
-
-                          if (end.isBefore(start)) {
-                            end.add(1, 'day'); // Add 1 day if end is before start
-                          }
-
+                          if (end.isBefore(start)) end.add(1, 'day');
                           const duration = moment.duration(end.diff(start));
-
                           const hours = String(duration.hours()).padStart(2, '0');
                           const minutes = String(duration.minutes()).padStart(2, '0');
                           const seconds = String(duration.seconds()).padStart(2, '0');
-
                           return (
-                            <View style={{ backgroundColor: '#e6e9fa', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, marginTop: 5 }}>
-                              <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>
-                                ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
-                              </Text>
-                            </View>
+                            <Text style={{ fontSize: 13, fontWeight: '500', color: '#222' }}>
+                              🕒 ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
+                            </Text>
                           );
                         })()}
-                      </>
-                    }
-                    {/* <Text style={{ color: '#000', fontSize: 12, fontWeight: '400' }}>Total Duration: {moment.duration(moment(item.end_time, "HH:mm:ss").diff(moment(item.start_time, "HH:mm:ss"))).humanize()}</Text> */}
-                  </View>
-                  <View style={{ width: '40%', alignItems: 'center' }}>
-                    {item.niti_status === "Completed" && <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</Text>}
-                    {item.niti_status === "Started" && <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>ଚାଲୁଛି</Text>}
+                      </View>
+                    </>
+                  )}
+
+                  {/* Status */}
+                  <View style={{
+                    backgroundColor: item.niti_status === 'Completed' ? '#d4edda' : '#fff3cd',
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    borderRadius: 20,
+                    alignSelf: 'flex-start',
+                  }}>
+                    <Text style={{
+                      color: item.niti_status === 'Completed' ? '#155724' : '#856404',
+                      fontSize: 13,
+                      fontWeight: '600',
+                    }}>
+                      {item.niti_status === 'Completed' ? '✔ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି' : '⌛ ଚାଲୁଛି'}
+                    </Text>
                   </View>
                 </View>
               )}
@@ -1473,6 +1697,182 @@ const Index = () => {
           </View>
         </View>
       </Modal>
+
+      <Modal visible={endTimeEditModal} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 20, paddingTop: 10, alignItems: 'center', elevation: 5, width: 300, position: 'relative' }}>
+            {/* Close Button */}
+            <TouchableOpacity
+              onPress={() => setEndTimeEditModal(false)}
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                zIndex: 10,
+                padding: 5,
+              }}
+            >
+              <Text style={{ fontSize: 18, color: '#000' }}>✕</Text>
+              {/* Or use Icon like Feather name="x" */}
+            </TouchableOpacity>
+
+            <DatePicker
+              mode="time"
+              date={endTime}
+              onDateChange={setEndTime}
+              textColor="#000"
+              androidVariant="iosClone"
+              is24hourSource="locale"
+              locale="en-GB"
+            />
+            <TouchableOpacity
+              style={{
+                marginTop: 15,
+                backgroundColor: '#051b65',
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 50
+              }}
+              onPress={endTimeEdit}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Set End Time</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for niti not done reason text input */}
+      <Modal
+        visible={niti_notDone_reasonModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setNiti_notDone_reasonModal(false)}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="alert-circle-outline" size={48} color="#FF5722" />
+            <Text style={styles.modalTitle}>ନୀତି ନ ହେବାର କାରଣ</Text>
+            <Text style={{ fontSize: 16, color: '#444', textAlign: 'center', marginBottom: 10 }}>ଦୟାକରି ଏହି ନୀତି ନ ହେବାର କାରଣ ଲେଖନ୍ତୁ:</Text>
+            <View style={{ width: '100%', marginBottom: 20 }}>
+              <TextInput
+                placeholder="କାରଣ ଲେଖନ୍ତୁ..."
+                placeholderTextColor="#999"
+                value={niti_notDone_reason}
+                onChangeText={text => setNiti_notDone_reason(text)}
+                multiline
+                numberOfLines={4}
+                style={{
+                  backgroundColor: '#F9F9F9',
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 15,
+                  paddingHorizontal: 20,
+                  paddingVertical: 15,
+                  fontSize: 16,
+                  color: '#000',
+                  textAlignVertical: 'top',
+                }}
+              />
+            </View>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={() => { setNiti_notDone_reasonModal(false); setNiti_notDone_reason(''); }}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => notDoneNiti(confirmData)}
+                style={styles.confirmButton}
+              >
+                <Text style={styles.confirmText}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Change Darshan Modal */}
+      <Modal
+        visible={editDarshanModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditDarshanModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#fff', width: '90%', borderRadius: 10, padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 10 }}>ଦର୍ଶନ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</Text>
+
+            {/* List of darshans with radio buttons */}
+            {allDarshan.map((darshan) => (
+              <TouchableOpacity
+                key={darshan.id}
+                onPress={() => setSelectedDarshanId(darshan.id)}
+                style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8 }}
+              >
+                <View style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#B7070A',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 10,
+                }}>
+                  {selectedDarshanId === darshan.id && (
+                    <View style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#B7070A',
+                    }} />
+                  )}
+                </View>
+                <Text style={{ fontSize: 16 }}>{darshan.darshan_name}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              onPress={() => setSelectedDarshanId(null)}
+              style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8 }}
+            >
+              <View style={{
+                height: 20,
+                width: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: '#B7070A',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 10,
+              }}>
+                {selectedDarshanId === null && (
+                  <View style={{
+                    height: 10,
+                    width: 10,
+                    borderRadius: 5,
+                    backgroundColor: '#B7070A',
+                  }} />
+                )}
+              </View>
+              <Text style={{ fontSize: 16 }}>ଦର୍ଶନ ବନ୍ଦ</Text>
+            </TouchableOpacity>
+
+            {/* Buttons */}
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 }}>
+              <TouchableOpacity onPress={() => setEditDarshanModal(false)} style={{ backgroundColor: '#dbd7d7', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6, marginRight: 20 }}>
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={editDarshan}
+                style={{ backgroundColor: '#B7070A', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 }}
+              >
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal >
 
       <Modal
         visible={confirmVisible}
@@ -1551,7 +1951,7 @@ const Index = () => {
             <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => setIsModalVisible(false)}>
               <Ionicons name="close" color="#000" size={28} />
             </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ମହାସ୍ନାନ ନୀତି</Text>
 
             {/* Special Niti List */}
             <FlatList
@@ -1699,7 +2099,7 @@ const Index = () => {
         </View>
       </Modal>
 
-    </View>
+    </View >
   );
 };
 
