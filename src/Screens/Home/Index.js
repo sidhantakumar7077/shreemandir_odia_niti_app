@@ -328,11 +328,13 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         console.log("Niti started successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         console.log("Error", responseData);
       }
@@ -423,6 +425,7 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         setNiti_notDone_reasonModal(false);
         setNiti_notDone_reason('');
@@ -431,6 +434,7 @@ const Index = () => {
       } else {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         // setConfirmData(null);
         ToastAndroid.show(responseData.message || 'Error marking Niti as not done', ToastAndroid.SHORT);
         // console.log("Error", responseData);
@@ -458,12 +462,14 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         ToastAndroid.show('Niti reset successfully', ToastAndroid.SHORT);
         console.log("Niti reset successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         ToastAndroid.show('Error resetting Niti', ToastAndroid.SHORT);
         console.log("Error", responseData);
@@ -491,11 +497,13 @@ const Index = () => {
       if (responseData.status) {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         console.log("Niti stopped successfully", responseData);
       } else {
         getAllNiti();
         getCompletedNiti();
+        getDarshan();
         setConfirmData(null);
         console.log("Error", responseData);
       }
@@ -1048,52 +1056,40 @@ const Index = () => {
             </View>
           </View>
         )} */}
+        {/* Current Darshan */}
+        {currentDarshan ?
+          <View style={styles.cell}>
+            <TouchableOpacity
+              style={{ width: '100%' }}
+              onPress={() => {
+                setSelectedDarshanId(currentDarshan?.id);
+                setEditDarshanModal(true);
+              }}
+            >
+              <Text style={{ color: '#000', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>
+                ଚାଲୁଥିବା ଦର୍ଶନ: {currentDarshan.darshan_name}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          :
+          <View style={styles.cell}>
+            <TouchableOpacity
+              style={{ width: '100%' }}
+              onPress={() => {
+                setSelectedDarshanId(null);
+                setEditDarshanModal(true);
+              }}
+            >
+              <Text style={{ color: '#000', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ ବନ୍ଦ ଅଛି</Text>
+            </TouchableOpacity>
+          </View>
+        }
         {/* Today Date */}
         <View style={{ backgroundColor: '#FFBE00', marginTop: 1 }}>
           <View style={{ backgroundColor: '#B7070A', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{moment().format("MMMM Do YYYY, dddd")}</Text>
           </View>
         </View>
-        {/* Current Darshan */}
-        {currentDarshan ?
-          <View style={styles.cell}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-              <View style={{ width: '60%' }}>
-                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>
-                  ଚାଲୁଥିବା ଦର୍ଶନ: {currentDarshan.darshan_name}
-                </Text>
-              </View>
-              <View style={{ width: '40%', alignItems: 'center' }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedDarshanId(currentDarshan?.id);
-                    setEditDarshanModal(true);
-                  }}
-                  style={{ backgroundColor: '#B7070A', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}
-                >
-                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>ଦର୍ଶନ ପରିବର୍ତ୍ତନ</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          : (
-            <View style={styles.cell}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
-                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ ବନ୍ଦ ଅଛି</Text>
-                <View style={{ width: '40%', alignItems: 'center' }}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedDarshanId(null);
-                      setEditDarshanModal(true);
-                    }}
-                    style={{ backgroundColor: '#B7070A', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>ଦର୍ଶନ ପରିବର୍ତ୍ତନ</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
         {suchana && suchana.niti_notice && (
           <SwipeRow
             rightOpenValue={-50}
@@ -1565,18 +1561,18 @@ const Index = () => {
                   {/* Start Time Block */}
                   <View style={{ marginBottom: 8 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 14, color: '#333' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                      <Text style={{ fontSize: 15, color: '#333' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
                       <TouchableOpacity onPress={() => clickStartTimeEdit(item.id, item.start_time)}>
                         <Feather name="edit-3" size={18} color="#555" />
                       </TouchableOpacity>
                     </View>
                     {item.start_user_id && (
-                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                      <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
                         ➤ ଆରମ୍ଭ: {item.start_user_id}
                       </Text>
                     )}
                     {item.start_time_edit_user_id && (
-                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                      <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
                         ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id}
                       </Text>
                     )}
@@ -1587,18 +1583,18 @@ const Index = () => {
                     <>
                       <View style={{ marginBottom: 8 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text style={{ fontSize: 14, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                          <Text style={{ fontSize: 15, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
                           <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.end_time)}>
                             <Feather name="edit-3" size={18} color="#555" />
                           </TouchableOpacity>
                         </View>
                         {item.end_user_id && (
-                          <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                          <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
                             ➤ ସମାପନ: {item.end_user_id}
                           </Text>
                         )}
                         {item.end_time_edit_user_id && (
-                          <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                          <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
                             ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id}
                           </Text>
                         )}

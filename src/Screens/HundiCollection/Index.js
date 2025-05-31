@@ -273,7 +273,7 @@ const Index = () => {
                         <TextInput
                             placeholder="ସୁନା"
                             keyboardType="default"
-                            value={hundiData.gold.toString()}
+                            value={hundiData.gold}
                             onChangeText={(val) => setHundiData({ ...hundiData, gold: val })}
                             style={styles.input}
                         />
@@ -282,7 +282,7 @@ const Index = () => {
                         <TextInput
                             placeholder="ସୁନା"
                             keyboardType="default"
-                            value={hundiData.mixedGold.toString()}
+                            value={hundiData.mixedGold}
                             onChangeText={(val) => setHundiData({ ...hundiData, mixedGold: val })}
                             style={styles.input}
                         />
@@ -291,7 +291,7 @@ const Index = () => {
                         <TextInput
                             placeholder="ରୂପା"
                             keyboardType="default"
-                            value={hundiData.silver.toString()}
+                            value={hundiData.silver}
                             onChangeText={(val) => setHundiData({ ...hundiData, silver: val })}
                             style={styles.input}
                         />
@@ -300,7 +300,7 @@ const Index = () => {
                         <TextInput
                             placeholder="ରୂପା"
                             keyboardType="default"
-                            value={hundiData.mixedSilver.toString()}
+                            value={hundiData.mixedSilver}
                             onChangeText={(val) => setHundiData({ ...hundiData, mixedSilver: val })}
                             style={styles.input}
                         />
