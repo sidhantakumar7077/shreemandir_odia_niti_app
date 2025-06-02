@@ -31,6 +31,8 @@ const App = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false); // control version update modal
   const [showDownloadModal, setShowDownloadModal] = useState(false); // control download progress modal
   const [downloadProgress, setDownloadProgress] = useState(0); // for showing % progress
+  // const apiLevel = Platform.Version;
+  // console.log(`API Level: ${apiLevel}`);
 
   const requestStoragePermission = async () => {
     if (Platform.OS === 'android' && Platform.Version < 33) {

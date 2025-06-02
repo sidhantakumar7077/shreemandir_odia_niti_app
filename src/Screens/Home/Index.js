@@ -1150,36 +1150,36 @@ const Index = () => {
                       )}
                     </View>
                     <View style={{ width: '40%', alignItems: 'center' }}>
-                      {item.niti_status === "Upcoming" && index === 0 &&
+                      {item.niti_status === "Upcoming" && (index === 0 || index === 1 || index === 2 || index === 3) &&
                         <>
                           <TouchableOpacity
                             style={{
-                              backgroundColor: index === 0 ? 'green' : '#ccc',
+                              backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
                               paddingVertical: 7,
                               paddingHorizontal: 10,
                               borderRadius: 5,
                             }}
-                            disabled={index !== 0}
+                            disabled={!([0, 1, 2, 3].includes(index))}
                             onPress={() => showConfirmation('start', item.niti_id)}
                           >
                             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={{
-                              backgroundColor: index === 0 ? '#6ea1f5' : '#ccc',
+                              backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? '#6ea1f5' : '#ccc',
                               paddingVertical: 7,
-                              paddingHorizontal: 10,
+                              paddingHorizontal: 5,
                               borderRadius: 5,
                               marginTop: 10
                             }}
-                            disabled={index !== 0}
+                            disabled={!([0, 1, 2, 3].includes(index))}
                             onPress={() => showConfirmation('not done', item.niti_id)}
                           >
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Not Done</Text>
+                            <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Not Done</Text>
                           </TouchableOpacity>
                         </>
                       }
-                      {index === 0 ? (
+                      {(index === 0 || index === 1 || index === 2 || index === 3) ? (
                         <>
                           {(item.niti_status === "Started" || item.niti_status === "Paused") &&
                             <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
@@ -1266,12 +1266,12 @@ const Index = () => {
                       ) : (
                         <TouchableOpacity
                           style={{
-                            backgroundColor: index === 0 ? 'green' : '#ccc',
+                            backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
                             paddingVertical: 7,
                             paddingHorizontal: 10,
                             borderRadius: 5,
                           }}
-                          disabled={index !== 0}
+                          disabled={!([0, 1, 2, 3].includes(index))}
                           onPress={() => showConfirmation('start', item.niti_id)}
                         >
                           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
@@ -1628,7 +1628,11 @@ const Index = () => {
 
                   {/* Status */}
                   <View style={{
-                    backgroundColor: item.niti_status === 'Completed' ? '#d4edda' : '#fff3cd',
+                    backgroundColor: item.niti_status === 'Completed'
+                      ? '#d4edda'
+                      : item.niti_status === 'Started'
+                        ? '#fff3cd'
+                        : '#f8d7da',
                     paddingVertical: 6,
                     paddingHorizontal: 12,
                     borderRadius: 20,
@@ -1639,7 +1643,13 @@ const Index = () => {
                       fontSize: 13,
                       fontWeight: '600',
                     }}>
-                      {item.niti_status === 'Completed' ? '✔ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି' : '⌛ ଚାଲୁଛି'}
+                      {
+                        item.niti_status === 'Completed'
+                          ? '✔ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି'
+                          : item.niti_status === 'Started'
+                            ? '⌛ ଚାଲୁଛି'
+                            : '❌ ନୀତି ହୋଇନାହିଁ'
+                      }
                     </Text>
                   </View>
                 </View>
