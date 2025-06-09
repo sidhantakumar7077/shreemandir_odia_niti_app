@@ -5,9 +5,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import DeviceInfo from 'react-native-device-info';
+import NetInfo from "@react-native-community/netinfo";
 
 // SplashScreen
 import SplashScreen from './src/Screens/SplashScreen/Index'
+
+// No Internet page
+import NoInternet from './src/Screens/NoInternet/Index'
 
 // AUth
 import Login from './src/Screens/Auth/Login'
@@ -23,8 +27,8 @@ import Notice from './src/Screens/Notice/Index'
 
 const Stack = createNativeStackNavigator()
 
-// export const base_url = "http://temple.mandirparikrama.com/"
-export const base_url = "https://shreejagannathadham.com/"
+export const base_url = "http://temple.mandirparikrama.com/"
+// export const base_url = "https://shreejagannathadham.com/"
 
 const App = () => {
 
@@ -162,6 +166,20 @@ const App = () => {
     }
   };
 
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      console.log("Connection type", state.type);
+      console.log("Is connected?", state.isConnected);
+      setIsConnected(state.isConnected ?? false);
+    });
+    return () => {
+      unsubscribe();
+      // setTimeout(unsubscribe, 5000);
+    }
+  }, []);
+
   useEffect(() => {
     const initializeApp = async () => {
       await getAccessToken();
@@ -194,14 +212,20 @@ const App = () => {
       <StatusBar backgroundColor="#B7070A" barStyle="light-content" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {showSplash ? (<Stack.Screen name="SplashScreen" component={SplashScreen} options={{ presentation: 'modal', animationTypeForReplace: 'push', animation: 'slide_from_right' }} />) : null}
-        {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
-        {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
-        <Stack.Screen name="OtpVerify" component={OtpVerify} />
-        <Stack.Screen name="ManualNitiPage" component={ManualNitiPage} />
-        <Stack.Screen name="Darshan" component={Darshan} />
-        <Stack.Screen name="MahaPrasad" component={MahaPrasad} />
-        <Stack.Screen name="HundiCollection" component={HundiCollection} />
-        <Stack.Screen name="Notice" component={Notice} />
+        {/* {!isConnected ?
+          <Stack.Screen name="NoInternet" component={NoInternet} />
+          : */}
+          <>
+            {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
+            {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
+            <Stack.Screen name="OtpVerify" component={OtpVerify} />
+            <Stack.Screen name="ManualNitiPage" component={ManualNitiPage} />
+            <Stack.Screen name="Darshan" component={Darshan} />
+            <Stack.Screen name="MahaPrasad" component={MahaPrasad} />
+            <Stack.Screen name="HundiCollection" component={HundiCollection} />
+            <Stack.Screen name="Notice" component={Notice} />
+          </>
+        {/* } */}
       </Stack.Navigator>
 
       {/* Version Update Modal */}

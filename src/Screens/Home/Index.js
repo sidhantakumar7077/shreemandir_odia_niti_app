@@ -117,6 +117,7 @@ const Index = () => {
   const [endTime, setEndTime] = useState(new Date());
   const [niti_notDone_reasonModal, setNiti_notDone_reasonModal] = useState(false);
   const [niti_notDone_reason, setNiti_notDone_reason] = useState('');
+  const [showEndOfTheNitiBtm, setShowEndOfTheNitiBtm] = useState(false);
 
   const clickStartTimeEdit = (nitiId, startTimeStr) => {
     const parts = startTimeStr.split(':');
@@ -259,11 +260,13 @@ const Index = () => {
         const filteredNiti = responseData.data.filter(item => item.niti_status !== "Completed");
         setAllNiti(filteredNiti);
         setSuchana(responseData.niti_info);
+        setShowEndOfTheNitiBtm(true);
         // console.log("All Niti", filteredNiti);
       }
     } catch (error) {
       console.log(error);
       setSpinner(false);
+      setShowEndOfTheNitiBtm(false);
     }
   };
 
@@ -936,6 +939,14 @@ const Index = () => {
     }
   };
 
+  const tryAgain = () => {
+    getAllNiti();
+    getCompletedNiti();
+    getOtherNiti();
+    getNotice();
+    getDarshan();
+  };
+
   useEffect(() => {
     if (isFocused) {
       getAllNiti();
@@ -1518,7 +1529,7 @@ const Index = () => {
               }
               rightOpenValue={-80}
             />
-            {allNiti.length === 0 && (
+            {allNiti.length === 0 &&
               <View style={{ alignItems: 'center', marginTop: 20 }}>
                 <TouchableOpacity
                   style={{
@@ -1528,12 +1539,20 @@ const Index = () => {
                     borderRadius: 8,
                     elevation: 3
                   }}
-                  onPress={() => endNiti()}
+                  onPress={() => {
+                    if (showEndOfTheNitiBtm) {
+                      endNiti();
+                    } else {
+                      tryAgain();
+                    }
+                  }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>End of Niti</Text>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                    {showEndOfTheNitiBtm && allNiti.length === 0 ? 'End of Niti' : 'Try Again'}
+                  </Text>
                 </TouchableOpacity>
               </View>
-            )}
+            }
           </View>
         ) : (
           <View style={styles.cell}>
