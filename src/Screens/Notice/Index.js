@@ -10,6 +10,7 @@ const Index = () => {
     const [notices, setNotices] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [noticeText, setNoticeText] = useState('');
+    const [englisgNoticeText, setEnglishNoticeText] = useState('');
     const [isEditMode, setIsEditMode] = useState(false);
     const [editNoticeId, setEditNoticeId] = useState(null);
     const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
@@ -65,6 +66,7 @@ const Index = () => {
                 body: JSON.stringify({
                     id: isEditMode ? editNoticeId : null,
                     notice_name: noticeText,
+                    notice_name_english: englisgNoticeText,
                     start_date: moment(noticeStartDate).format('YYYY-MM-DD'),
                     end_date: moment(noticeEndDate).format('YYYY-MM-DD'),
                 }),
@@ -151,6 +153,7 @@ const Index = () => {
                 </View>
             </View>
             <Text style={styles.noticeText}>{item.notice_name}</Text>
+            <Text style={styles.noticeText}>{item.notice_name_english}</Text>
         </View>
     );
 
@@ -186,6 +189,15 @@ const Index = () => {
                             placeholder="ଏଠାରେ ଆପଣଙ୍କର ସୂଚନା ଲେଖନ୍ତୁ..."
                             value={noticeText}
                             onChangeText={setNoticeText}
+                            style={styles.input}
+                            multiline
+                            numberOfLines={4}
+                        />
+                        <Text style={styles.modalTitle}>ଇଂରାଜୀ ସୂଚନା</Text>
+                        <TextInput
+                            placeholder="Write your notice here..."
+                            value={englisgNoticeText}
+                            onChangeText={setEnglishNoticeText}
                             style={styles.input}
                             multiline
                             numberOfLines={4}

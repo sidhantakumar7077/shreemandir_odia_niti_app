@@ -24,6 +24,7 @@ const Index = () => {
   const [isOtherNitiModalVisible, setIsOtherNitiModalVisible] = useState(false);
   const [isSuchanaModalVisible, setIsSuchanaModalVisible] = useState(false);
   const [suchanaText, setSuchanaText] = useState('');
+  const [suchanaEngText, setSuchanaEngText] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const closeDrawer = () => { setIsDrawerOpen(false); };
@@ -47,6 +48,7 @@ const Index = () => {
   const [completedNiti, setCompletedNiti] = useState([]);
   const [otherNiti, setOtherNiti] = useState([]);
   const [otherNitiText, setOtherNitiText] = useState('');
+  const [otherEngNitiText, setOtherEngNitiText] = useState('');
   const [runningTimers, setRunningTimers] = useState({});
 
   // useEffect(() => {
@@ -261,7 +263,7 @@ const Index = () => {
         setAllNiti(filteredNiti);
         setSuchana(responseData.niti_info);
         setShowEndOfTheNitiBtm(true);
-        // console.log("All Niti", filteredNiti);
+        // console.log("All Niti", responseData.niti_info);
       }
     } catch (error) {
       console.log(error);
@@ -521,6 +523,7 @@ const Index = () => {
     const selectedNiti = otherNiti.find(item => item.id === selectedItem);
     const payload = {
       niti_name: selectedNiti?.niti_name || otherNitiText,
+      english_niti_name: otherEngNitiText || '',
       niti_id: selectedNiti?.niti_id || null,
     };
 
@@ -602,6 +605,7 @@ const Index = () => {
 
         body: JSON.stringify({
           niti_notice: suchanaText,
+          niti_notice_english: suchanaEngText,
         }),
       });
       const responseData = await response.json();
@@ -986,6 +990,7 @@ const Index = () => {
           </View>
         </View>
       </View>
+
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {/* Notice Banner */}
         {notice && notice.notice_name &&
@@ -1118,7 +1123,10 @@ const Index = () => {
             {/* Front Row (Notice Display) */}
             <View style={{ backgroundColor: '#fff', padding: 10, flexDirection: 'row', alignItems: 'center' }}>
               <Fontisto name="onenote" size={20} color="#e65100" />
-              <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', marginLeft: 15 }}>{suchana.niti_notice}</Text>
+              <View style={{ flex: 1, marginLeft: 15 }}>
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>{suchana.niti_notice_english}</Text>
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: '600' }}>{suchana.niti_notice}</Text>
+              </View>
             </View>
           </SwipeRow>
         )}
@@ -1161,120 +1169,69 @@ const Index = () => {
                       )}
                     </View>
                     <View style={{ width: '40%', alignItems: 'center' }}>
-                      {item.niti_status === "Upcoming" && (index === 0 || index === 1 || index === 2 || index === 3) &&
+                      {/* {item.niti_status === "Upcoming" && (index === 0 || index === 1 || index === 2 || index === 3) && */}
+                      {item.niti_status === "Upcoming" &&
                         <>
                           <TouchableOpacity
                             style={{
-                              backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
+                              // backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
+                              backgroundColor: 'green',
                               paddingVertical: 7,
                               paddingHorizontal: 10,
                               borderRadius: 5,
                             }}
-                            disabled={!([0, 1, 2, 3].includes(index))}
+                            // disabled={!([0, 1, 2, 3].includes(index))}
                             onPress={() => showConfirmation('start', item.niti_id)}
                           >
                             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={{
-                              backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? '#6ea1f5' : '#ccc',
+                              // backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? '#6ea1f5' : '#ccc',
+                              backgroundColor: '#6ea1f5',
                               paddingVertical: 7,
                               paddingHorizontal: 5,
                               borderRadius: 5,
                               marginTop: 10
                             }}
-                            disabled={!([0, 1, 2, 3].includes(index))}
+                            // disabled={!([0, 1, 2, 3].includes(index))}
                             onPress={() => showConfirmation('not done', item.niti_id)}
                           >
                             <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Not Done</Text>
                           </TouchableOpacity>
                         </>
                       }
-                      {(index === 0 || index === 1 || index === 2 || index === 3) ? (
-                        <>
-                          {(item.niti_status === "Started" || item.niti_status === "Paused") &&
-                            <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
-                              <TouchableOpacity
-                                style={{
-                                  backgroundColor: '#B7070A',
-                                  paddingVertical: 7,
-                                  paddingHorizontal: 10,
-                                  borderRadius: 5
-                                }}
-                                onPress={() => showConfirmation('stop', item.niti_id)}
-                              >
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                              </TouchableOpacity>
-                              <TouchableOpacity
-                                style={{
-                                  backgroundColor: '#1a2a87',
-                                  paddingVertical: 7,
-                                  paddingHorizontal: 10,
-                                  borderRadius: 5,
-                                  marginTop: 10
-                                }}
-                                onPress={() => showConfirmation('reset', item.niti_id)}
-                              >
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Reset</Text>
-                              </TouchableOpacity>
-                            </View>
-                            // <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
-                            //   {item.niti_type === "other" ? (
-                            //     <TouchableOpacity
-                            //       style={{
-                            //         backgroundColor: '#B7070A',
-                            //         paddingVertical: 7,
-                            //         paddingHorizontal: 10,
-                            //         borderRadius: 5
-                            //       }}
-                            //       onPress={() => showConfirmation('stop', item.niti_id)}
-                            //     >
-                            //       <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                            //     </TouchableOpacity>
-                            //   ) : (
-                            //     <>
-                            //       {item.niti_status === 'Paused' ? (
-                            //         <TouchableOpacity
-                            //           style={{
-                            //             backgroundColor: '#11dcf2',
-                            //             paddingVertical: 7,
-                            //             paddingHorizontal: 7,
-                            //             borderRadius: 5
-                            //           }}
-                            //           onPress={() => showConfirmation('resume', item.niti_id)}
-                            //         >
-                            //           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Resume</Text>
-                            //         </TouchableOpacity>
-                            //       ) : (
-                            //         <TouchableOpacity
-                            //           style={{
-                            //             backgroundColor: '#11dcf2',
-                            //             paddingVertical: 7,
-                            //             paddingHorizontal: 7,
-                            //             borderRadius: 5
-                            //           }}
-                            //           onPress={() => showConfirmation('pause', item.niti_id)}
-                            //         >
-                            //           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Pause</Text>
-                            //         </TouchableOpacity>
-                            //       )}
-                            //       <TouchableOpacity
-                            //         style={{
-                            //           backgroundColor: '#B7070A',
-                            //           paddingVertical: 7,
-                            //           paddingHorizontal: 10,
-                            //           borderRadius: 5
-                            //         }}
-                            //         onPress={() => showConfirmation('stop', item.niti_id)}
-                            //       >
-                            //         <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
-                            //       </TouchableOpacity>
-                            //     </>
-                            //   )}
-                            // </View>
-                          }
-                        </>
-                      ) : (
+                      {/* {(index === 0 || index === 1 || index === 2 || index === 3) ? ( */}
+                      <>
+                        {(item.niti_status === "Started" || item.niti_status === "Paused") &&
+                          <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: '#B7070A',
+                                paddingVertical: 7,
+                                paddingHorizontal: 10,
+                                borderRadius: 5
+                              }}
+                              onPress={() => showConfirmation('stop', item.niti_id)}
+                            >
+                              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Stop</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: '#1a2a87',
+                                paddingVertical: 7,
+                                paddingHorizontal: 10,
+                                borderRadius: 5,
+                                marginTop: 10
+                              }}
+                              onPress={() => showConfirmation('reset', item.niti_id)}
+                            >
+                              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Reset</Text>
+                            </TouchableOpacity>
+                          </View>
+                        }
+                      </>
+                      {/* ) : (
                         <TouchableOpacity
                           style={{
                             backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
@@ -1287,7 +1244,7 @@ const Index = () => {
                         >
                           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Start</Text>
                         </TouchableOpacity>
-                      )}
+                      )} */}
                     </View>
                   </View>
                   {/* {collapseNiti === item.niti_id && <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginTop: 10 }} />} */}
@@ -2065,6 +2022,18 @@ const Index = () => {
               style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
             />
 
+            {/* Other Special English Niti Input */}
+            <TextInput
+              placeholder="Type in English..."
+              placeholderTextColor="#888"
+              value={otherEngNitiText}
+              onChangeText={text => {
+                setOtherEngNitiText(text);
+                if (text.length >= 4) setSelectedItem(null);
+              }}
+              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
+            />
+
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitOtherNiti}
@@ -2074,7 +2043,9 @@ const Index = () => {
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  otherNitiText.trim().length >= 3 ? '#B7070A' : '#ccc'
+                  otherNitiText.trim().length >= 3 || otherEngNitiText.trim().length >= 3
+                    ? '#B7070A'
+                    : '#ccc'
               }}
             >
               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
@@ -2106,6 +2077,15 @@ const Index = () => {
               style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
             />
 
+            {/* English Suchana Input */}
+            <TextInput
+              placeholder="Type in English..."
+              placeholderTextColor="#888"
+              value={suchanaEngText}
+              onChangeText={text => setSuchanaEngText(text)}
+              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginTop: 10, marginBottom: 20, fontSize: 16, color: '#000' }}
+            />
+
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitSuchana}
@@ -2115,7 +2095,9 @@ const Index = () => {
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  suchanaText.trim().length >= 3 ? '#B7070A' : '#ccc'
+                  suchanaText.trim().length >= 3 || suchanaEngText.trim().length >= 3
+                    ? '#B7070A'
+                    : '#ccc'
               }}
             >
               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
