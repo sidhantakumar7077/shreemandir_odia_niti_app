@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         borderRadius: 14,
         padding: 20,
-        top: '20%'
+        top: '10%'
     },
     modalTitle: {
         fontSize: 18,
