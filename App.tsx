@@ -212,9 +212,9 @@ const App = () => {
       <StatusBar backgroundColor="#B7070A" barStyle="light-content" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {showSplash ? (<Stack.Screen name="SplashScreen" component={SplashScreen} options={{ presentation: 'modal', animationTypeForReplace: 'push', animation: 'slide_from_right' }} />) : null}
-        {/* {!isConnected ?
+        {!isConnected ?
           <Stack.Screen name="NoInternet" component={NoInternet} />
-          : */}
+          :
           <>
             {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
             {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
@@ -225,7 +225,7 @@ const App = () => {
             <Stack.Screen name="HundiCollection" component={HundiCollection} />
             <Stack.Screen name="Notice" component={Notice} />
           </>
-        {/* } */}
+        }
       </Stack.Navigator>
 
       {/* Version Update Modal */}
