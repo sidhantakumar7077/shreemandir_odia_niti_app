@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, StyleSheet, ToastAndroid, ScrollView, RefreshControl } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import DatePicker from 'react-native-date-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
@@ -46,8 +47,14 @@ const Index = () => {
     }, []);
 
     const handleSaveNotice = async () => {
+        const token = await AsyncStorage.getItem('storeAccesstoken');
+
         if (!noticeText || noticeText.length < 4) {
             ToastAndroid.show('Notice must be at least 4 characters.', ToastAndroid.SHORT);
+            return;
+        }
+        if (!englisgNoticeText || englisgNoticeText.length < 4) {
+            ToastAndroid.show('English notice must be at least 4 characters.', ToastAndroid.SHORT);
             return;
         }
         if (noticeEndDate < noticeStartDate) {
@@ -62,7 +69,11 @@ const Index = () => {
 
             const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     id: isEditMode ? editNoticeId : null,
                     notice_name: noticeText,

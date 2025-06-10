@@ -129,6 +129,51 @@ const Index = () => {
         }
     };
 
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deletingItemId, setDeletingItemId] = useState(null);
+
+    const confirmDeleteHundi = (id) => {
+        setDeletingItemId(id);
+        setDeleteModalVisible(true);
+    };
+
+    const handleDeleteHundi = async () => {
+        try {
+            const response = await fetch(`${base_url}api/hundi/delete/${deletingItemId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            });
+            const contentType = response.headers.get("content-type");
+            const rawText = await response.text();
+            console.log("Raw Response:", rawText);
+            if (!contentType || !contentType.includes("application/json")) {
+                ToastAndroid.show('ଅପ୍ରତ୍ୟାଶିତ ସର୍ଭର ପ୍ରତିକ୍ରିୟା', ToastAndroid.SHORT);
+                console.error("Expected JSON but got:", rawText);
+                return;
+            }
+            const result = JSON.parse(rawText); // Now safe to parse
+            if (response.ok && result.status) {
+                ToastAndroid.show('ହୁଣ୍ଡି ସଂଗ୍ରହ ଡିଲିଟ୍‍ ହୋଇଛି', ToastAndroid.SHORT);
+                setDeleteModalVisible(false);
+                setDeletingItemId(null);
+                getHundiCollection();
+            }
+            else {
+                ToastAndroid.show(result.message || 'ହୁଣ୍ଡି ସଂଗ୍ରହ ଡିଲିଟ୍‍ ହୋଇପାରିଲା ନାହିଁ', ToastAndroid.SHORT);
+                console.error("Delete failed:", result);
+            }
+        } catch (error) {
+            ToastAndroid.show('Network or server error!', ToastAndroid.SHORT);
+            console.error("Delete error:", error);
+        } finally {
+            setDeleteModalVisible(false);
+            setDeletingItemId(null);
+        }
+    };
+
     // const todayDate = moment().format('YYYY-MM-DD');
     // const todaysHundiList = hundiList.filter(item => item.date === todayDate);
     const todaysHundiListReversed = [...hundiList].slice(0, 5);
@@ -137,25 +182,34 @@ const Index = () => {
         <View style={styles.card}>
             <View style={styles.cardTop}>
                 <Text style={styles.cardDate}>{moment(item.date).format('DD MMM YYYY')}</Text>
-                {index === 0 && (
-                    <TouchableOpacity
-                        onPress={() => {
-                            setIsModalVisible(true);
-                            setIsEditMode(true);
-                            setEditingItem(item);
-                            setHundiData({
-                                rupees: item.rupees.toString(),
-                                gold: item.gold,
-                                silver: item.silver,
-                                mixedGold: item.mix_gold,
-                                mixedSilver: item.mix_silver
-                            });
-                            setHundiDate(new Date(item.date));
-                        }}
-                    >
-                        <Ionicons name="create-outline" size={20} color="#B7070A" />
-                    </TouchableOpacity>
-                )}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                    {index === 0 && (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsModalVisible(true);
+                                    setIsEditMode(true);
+                                    setEditingItem(item);
+                                    setHundiData({
+                                        rupees: item.rupees.toString(),
+                                        gold: item.gold,
+                                        silver: item.silver,
+                                        mixedGold: item.mix_gold,
+                                        mixedSilver: item.mix_silver
+                                    });
+                                    setHundiDate(new Date(item.date));
+                                }}
+                            >
+                                <Ionicons name="create-outline" size={20} color="#B7070A" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => confirmDeleteHundi(item.id)}
+                            >
+                                <Ionicons name="trash-outline" size={20} color="#B7070A" />
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
             </View>
             <Text style={styles.cardText}>💰 ₹{item.rupees}</Text>
             <Text style={styles.cardText}>🥇 {item.gold}</Text>
@@ -325,12 +379,101 @@ const Index = () => {
                             <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isEditMode ? 'Update' : 'Save'}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => {setIsModalVisible(false); setIsEditMode(false); setEditingItem(null);}} style={styles.cancelBtn}>
+                        <TouchableOpacity onPress={() => { setIsModalVisible(false); setIsEditMode(false); setEditingItem(null); }} style={styles.cancelBtn}>
                             <Text style={{ color: '#B7070A' }}>Cancel</Text>
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
             </Modal>
+
+            {/* Delete Hundi Modal */}
+            <Modal
+                visible={deleteModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDeleteModalVisible(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    padding: 20,
+                }}>
+                    <View style={{
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        borderRadius: 20,
+                        padding: 25,
+                        alignItems: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.2,
+                        shadowRadius: 6,
+                        elevation: 8,
+                    }}>
+                        <View style={{
+                            backgroundColor: '#FDECEC',
+                            padding: 20,
+                            borderRadius: 50,
+                            marginBottom: 20
+                        }}>
+                            <Ionicons name="trash-bin" size={36} color="#B7070A" />
+                        </View>
+
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: '600',
+                            color: '#222',
+                            marginBottom: 8,
+                            textAlign: 'center'
+                        }}>
+                            ହୁଣ୍ଡି ସଂଗ୍ରହ ଡିଲିଟ୍‍ କରନ୍ତୁ
+                        </Text>
+                        <Text style={{
+                            fontSize: 15,
+                            color: '#666',
+                            textAlign: 'center',
+                            marginBottom: 25
+                        }}>
+                            ଆପଣ ନିଶ୍ଚିତ ଭାବେ ଏହାକୁ ଡିଲିଟ୍‍ କରିବାକୁ ଚାହାଁଛନ୍ତି କି?
+                        </Text>
+
+                        <TouchableOpacity
+                            onPress={handleDeleteHundi}
+                            style={{
+                                width: '100%',
+                                backgroundColor: '#B7070A',
+                                paddingVertical: 12,
+                                borderRadius: 10,
+                                marginBottom: 12,
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
+                                ଡିଲିଟ୍‍ କରନ୍ତୁ
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => setDeleteModalVisible(false)}
+                            style={{
+                                width: '100%',
+                                paddingVertical: 12,
+                                borderRadius: 10,
+                                borderWidth: 1.5,
+                                borderColor: '#B7070A',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: '#B7070A', fontSize: 16 }}>
+                                ବାତିଲ୍‍ କରନ୍ତୁ
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
         </View>
     );
 };

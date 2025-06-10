@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, Modal, TextInput, ToastAndroid, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, Modal, TextInput, BackHandler, ToastAndroid, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -108,6 +108,32 @@ const Index = () => {
 
     return () => clearInterval(interval);
   }, [allNiti]);
+
+  const [backPressCount, setBackPressCount] = useState(0);
+
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (backPressCount === 1) {
+        BackHandler.exitApp(); // Exit the app if back button is pressed twice within 2 seconds
+        return true;
+      }
+
+      ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+      setBackPressCount(1);
+
+      const timeout = setTimeout(() => {
+        setBackPressCount(0);
+      }, 2000); // Reset back press count after 2 seconds
+
+      return true; // Prevent default behavior
+    };
+
+    if (isFocused) {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+      return () => backHandler.remove(); // Cleanup the event listener when the component unmounts or navigates away
+    }
+  }, [backPressCount, isFocused]);
 
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
@@ -239,7 +265,7 @@ const Index = () => {
     // if (confirmAction === 'pause') pauseNiti(confirmData);
     // if (confirmAction === 'pause') setIsModalVisible(true);
     // if (confirmAction === 'resume') resumeNiti(confirmData);
-    if (confirmAction === 'not done') setNiti_notDone_reasonModal(true);
+    if (confirmAction === 'not done/skip') setNiti_notDone_reasonModal(true);
     if (confirmAction === 'reset') resetStartNiti(confirmData);
     if (confirmAction === 'stop') stopNiti(confirmData);
     if (confirmAction === 'delete') deleteOtherNiti(confirmData);
@@ -1195,7 +1221,7 @@ const Index = () => {
                               marginTop: 10
                             }}
                             // disabled={!([0, 1, 2, 3].includes(index))}
-                            onPress={() => showConfirmation('not done', item.niti_id)}
+                            onPress={() => showConfirmation('not done/skip', item.niti_id)}
                           >
                             <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Not Done</Text>
                           </TouchableOpacity>
@@ -2037,13 +2063,13 @@ const Index = () => {
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitOtherNiti}
-              disabled={otherNitiText.trim().length < 3}
+              disabled={otherNitiText.trim().length >= 3 && otherEngNitiText.trim().length >= 3 ? false : true}
               style={{
                 borderRadius: 8,
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  otherNitiText.trim().length >= 3 || otherEngNitiText.trim().length >= 3
+                  otherNitiText.trim().length >= 3 && otherEngNitiText.trim().length >= 3
                     ? '#B7070A'
                     : '#ccc'
               }}
@@ -2089,13 +2115,13 @@ const Index = () => {
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitSuchana}
-              disabled={suchanaText.trim().length < 3}
+              disabled={suchanaText.trim().length >= 3 && suchanaEngText.trim().length >= 3 ? false : true}
               style={{
                 borderRadius: 8,
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  suchanaText.trim().length >= 3 || suchanaEngText.trim().length >= 3
+                  suchanaText.trim().length >= 3 && suchanaEngText.trim().length >= 3
                     ? '#B7070A'
                     : '#ccc'
               }}
