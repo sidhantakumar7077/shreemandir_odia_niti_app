@@ -107,6 +107,7 @@ const Index = () => {
         const today = new Date();
 
         setNoticeText(notice.notice_name);
+        setEnglishNoticeText(notice.notice_name_english);
         setNoticeStartDate(notice.start_date ? new Date(notice.start_date) : today);
         setNoticeEndDate(notice.end_date ? new Date(notice.end_date) : today);
         setEditNoticeId(notice.id);
@@ -165,6 +166,10 @@ const Index = () => {
             </View>
             <Text style={styles.noticeText}>{item.notice_name}</Text>
             <Text style={styles.noticeText}>{item.notice_name_english}</Text>
+            <Text style={{ fontSize: 12, color: '#888', marginTop: 5 }}>Added by: {item.notice_insert_user_id}</Text>
+            {item.notice_update_user_id && (
+                <Text style={{ fontSize: 12, color: '#888', marginTop: 5 }}>Updated by: {item.notice_update_user_id}</Text>
+            )}
         </View>
     );
 

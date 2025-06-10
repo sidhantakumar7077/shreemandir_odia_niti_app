@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Modal, TouchableOpacity, TextInput, StyleSheet, ToastAndroid, ScrollView, RefreshControl } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-picker';
 import { base_url } from '../../../App';
@@ -41,6 +42,8 @@ const Index = () => {
     }, []);
 
     const handleSaveHundi = async () => {
+        const token = await AsyncStorage.getItem('storeAccesstoken');
+
         try {
             const payload = {
                 date: moment(hundiDate).format('YYYY-MM-DD'),
@@ -59,7 +62,11 @@ const Index = () => {
 
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -80,6 +87,7 @@ const Index = () => {
     };
 
     const handleUpdateHundi = async () => {
+        const token = await AsyncStorage.getItem('storeAccesstoken');
         const payload = {
             id: editingItem.id,
             date: moment(hundiDate).format('YYYY-MM-DD'),
@@ -94,8 +102,9 @@ const Index = () => {
             const response = await fetch(`${base_url}api/hundi/update`, {
                 method: 'POST',
                 headers: {
+                    Accept: 'application/json',
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload),
             });
@@ -216,6 +225,10 @@ const Index = () => {
             {(item.mix_gold && <Text style={styles.cardText}>🥇 {item.mix_gold}</Text>)}
             <Text style={styles.cardText}>🥈 {item.silver}</Text>
             {(item.mix_silver && <Text style={styles.cardText}>🥈 {item.mix_silver}</Text>)}
+            <Text style={{ fontSize: 12, color: '#888', marginTop: 5 }}>Added by: {item.hundi_insert_user_id}</Text>
+            {item.hundi_update_user_id && (
+                <Text style={{ fontSize: 12, color: '#888', marginTop: 5 }}>Updated by: {item.hundi_update_user_id}</Text>
+            )}
         </View>
     );
 
