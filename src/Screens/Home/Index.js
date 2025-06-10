@@ -300,7 +300,7 @@ const Index = () => {
 
   const getOtherNiti = async () => {
     try {
-      const response = await fetch(base_url + 'api/other-niti', {
+      const response = await fetch(base_url + 'api/get-mahasnana-niti', {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -334,7 +334,7 @@ const Index = () => {
         setCompletedNiti(responseData.data);
         // console.log("Completed Niti", responseData.data);
       } else {
-        console.log("Error", responseData);
+        console.log("Error fetching completed Niti", responseData);
       }
     } catch (error) {
       console.log(error);
@@ -2037,27 +2037,33 @@ const Index = () => {
             <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
 
             {/* Other Special Niti Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଓଡ଼ିଆ ନୀତି</Text>
             <TextInput
-              placeholder="ଏହିଠାରେ ଲେଖନ୍ତୁ..."
+              placeholder="ଓଡ଼ିଆ ରେ ଲେଖନ୍ତୁ..."
               placeholderTextColor="#888"
+              multiline
+              numberOfLines={4}
+              style={styles.input}
               value={otherNitiText}
               onChangeText={text => {
                 setOtherNitiText(text);
                 if (text.length >= 4) setSelectedItem(null);
               }}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
             />
 
             {/* Other Special English Niti Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଇଂରାଜୀ ନୀତି</Text>
             <TextInput
               placeholder="Type in English..."
               placeholderTextColor="#888"
+              multiline
+              numberOfLines={4}
+              style={styles.input}
               value={otherEngNitiText}
               onChangeText={text => {
                 setOtherEngNitiText(text);
                 if (text.length >= 4) setSelectedItem(null);
               }}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
             />
 
             {/* Submit Button */}
@@ -2092,24 +2098,30 @@ const Index = () => {
             <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => setIsSuchanaModalVisible(false)}>
               <Ionicons name="close" color="#000" size={28} />
             </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ସୂଚନା</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ନୀତି ସୂଚନା</Text>
 
             {/* Suchana Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଓଡ଼ିଆ ନୀତି ସୂଚନା</Text>
             <TextInput
-              placeholder="ଏହିଠାରେ ଲେଖନ୍ତୁ..."
+              placeholder="ଓଡ଼ିଆ ରେ ଲେଖନ୍ତୁ..."
               placeholderTextColor="#888"
+              multiline
+              numberOfLines={4}
+              style={styles.input}
               value={suchanaText}
               onChangeText={text => setSuchanaText(text)}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginVertical: 15, fontSize: 16, color: '#000' }}
             />
 
             {/* English Suchana Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଇଂରାଜୀ ନୀତି ସୂଚନା</Text>
             <TextInput
               placeholder="Type in English..."
               placeholderTextColor="#888"
+              multiline
+              numberOfLines={4}
+              style={styles.input}
               value={suchanaEngText}
               onChangeText={text => setSuchanaEngText(text)}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, paddingHorizontal: 15, height: 45, marginTop: 10, marginBottom: 20, fontSize: 16, color: '#000' }}
             />
 
             {/* Submit Button */}
@@ -2131,7 +2143,6 @@ const Index = () => {
           </View>
         </View>
       </Modal>
-
     </View >
   );
 };
@@ -2282,5 +2293,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 15,
+    textAlignVertical: 'top'
   },
 });
