@@ -619,14 +619,14 @@ const Index = () => {
   };
 
   const handleSubmitSuchana = async () => {
-    // const token = await AsyncStorage.getItem('storeAccesstoken');
+    const token = await AsyncStorage.getItem('storeAccesstoken');
     try {
       const response = await fetch(base_url + 'api/niti-information', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         },
 
         body: JSON.stringify({
