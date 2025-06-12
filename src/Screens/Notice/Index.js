@@ -180,6 +180,7 @@ const Index = () => {
                 <Text style={styles.headerTitle}>ସୂଚନା</Text>
                 <TouchableOpacity onPress={() => {
                     setNoticeText('');
+                    setEnglishNoticeText('');
                     setIsEditMode(false);
                     setIsModalVisible(true);
                 }}>
