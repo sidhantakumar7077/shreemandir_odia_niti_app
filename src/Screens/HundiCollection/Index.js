@@ -30,8 +30,17 @@ const Index = () => {
         try {
             const response = await fetch(`${base_url}api/get-hundi-collections`);
             const result = await response.json();
-            if (result.status) setHundiList(result.data);
-            // console.log("Hundi Collection:", result.data);
+            if (result.status) {
+                if (result.data && result.data.length > 0) {
+                    setHundiList(result.data);
+                } else {
+                    setHundiList([]);
+                    ToastAndroid.show('କୌଣସି ହୁଣ୍ଡି ସଂଗ୍ରହ ନାହିଁ', ToastAndroid.SHORT);
+                }
+            } else {
+                setHundiList([]);
+                ToastAndroid.show('Error fetching hundi collection', ToastAndroid.SHORT);
+            }
         } catch (error) {
             console.log("Error fetching hundi collection", error);
         }
@@ -320,6 +329,11 @@ const Index = () => {
                 showsVerticalScrollIndicator={false}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderItem}
+                ListEmptyComponent={() => (
+                    <View style={{ marginTop: '40%', alignItems: 'center' }}>
+                        <Text style={{ color: '#888', fontSize: 16 }}>କୌଣସି ହୁଣ୍ଡି ସଂଗ୍ରହ ନାହିଁ</Text>
+                    </View>
+                )}
             />
 
             <Modal visible={isModalVisible} transparent animationType="slide" onRequestClose={() => setIsModalVisible(false)}>
