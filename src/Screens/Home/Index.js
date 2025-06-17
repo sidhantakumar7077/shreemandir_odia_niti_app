@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, Modal, TextInput, BackHandler, ToastAndroid, RefreshControl } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ScrollView, Modal, TextInput, BackHandler, ToastAndroid, RefreshControl, Animated, Easing } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -50,6 +50,29 @@ const Index = () => {
   const [otherNitiText, setOtherNitiText] = useState('');
   const [otherEngNitiText, setOtherEngNitiText] = useState('');
   const [runningTimers, setRunningTimers] = useState({});
+
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.linear,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.linear,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -1100,29 +1123,46 @@ const Index = () => {
         )} */}
         {/* Current Darshan */}
         {currentDarshan ?
-          <View style={styles.cell}>
+          <View style={styles.nitiCell}>
             <TouchableOpacity
-              style={{ width: '100%' }}
+              style={{ width: '80%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
               onPress={() => {
                 setSelectedDarshanId(currentDarshan?.id);
                 setEditDarshanModal(true);
               }}
             >
-              <Text style={{ color: '#000', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>
-                ଚାଲୁଥିବା ଦର୍ଶନ: {currentDarshan.darshan_name}
-              </Text>
+              <Text style={{ color: '#000', fontSize: 22, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ: </Text>
+              <Animated.View style={{ opacity: opacity }}>
+                <Text style={{ color: '#B7070A', fontSize: 22, fontWeight: '600', textAlign: 'center' }}>{currentDarshan?.darshan_name}</Text>
+              </Animated.View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ width: 60, height: 35, backgroundColor: 'green', borderRadius: 5, justifyContent: 'center', alignItems: 'center' }}
+              onPress={() => {
+                setSelectedDarshanId(currentDarshan?.id);
+                setEditDarshanModal(true);
+              }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>Edit</Text>
             </TouchableOpacity>
           </View>
           :
-          <View style={styles.cell}>
+          <View style={styles.nitiCell}>
             <TouchableOpacity
-              style={{ width: '100%' }}
+              style={{ width: '80%' }}
               onPress={() => {
                 setSelectedDarshanId(null);
                 setEditDarshanModal(true);
               }}
             >
-              <Text style={{ color: '#000', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ ବନ୍ଦ ଅଛି</Text>
+              <Text style={{ color: '#000', fontSize: 22, fontWeight: '600', textAlign: 'center' }}>ଦର୍ଶନ ବନ୍ଦ ଅଛି</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ width: 60, height: 35, backgroundColor: 'green', borderRadius: 5, justifyContent: 'center', alignItems: 'center' }}
+              onPress={() => {
+                setSelectedDarshanId(currentDarshan?.id);
+                setEditDarshanModal(true);
+              }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>Edit</Text>
             </TouchableOpacity>
           </View>
         }
@@ -1201,6 +1241,10 @@ const Index = () => {
                           <TouchableOpacity
                             style={{
                               // backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? 'green' : '#ccc',
+                              width: 80,
+                              height: 40,
+                              justifyContent: 'center',
+                              alignItems: 'center',
                               backgroundColor: 'green',
                               paddingVertical: 7,
                               paddingHorizontal: 10,
@@ -1214,6 +1258,10 @@ const Index = () => {
                           <TouchableOpacity
                             style={{
                               // backgroundColor: (index === 0 || index === 1 || index === 2 || index === 3) ? '#6ea1f5' : '#ccc',
+                              width: 80,
+                              height: 40,
+                              justifyContent: 'center',
+                              alignItems: 'center',
                               backgroundColor: '#6ea1f5',
                               paddingVertical: 7,
                               paddingHorizontal: 5,
@@ -1233,6 +1281,10 @@ const Index = () => {
                           <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
                             <TouchableOpacity
                               style={{
+                                width: 80,
+                                height: 40,
+                                justifyContent: 'center',
+                                alignItems: 'center',
                                 backgroundColor: '#B7070A',
                                 paddingVertical: 7,
                                 paddingHorizontal: 10,
@@ -1244,6 +1296,10 @@ const Index = () => {
                             </TouchableOpacity>
                             <TouchableOpacity
                               style={{
+                                width: 80,
+                                height: 40,
+                                justifyContent: 'center',
+                                alignItems: 'center',
                                 backgroundColor: '#1a2a87',
                                 paddingVertical: 7,
                                 paddingHorizontal: 10,
@@ -1563,7 +1619,7 @@ const Index = () => {
                   {/* Start Time Block */}
                   <View style={{ marginBottom: 8 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 15, color: '#333' }}>ଆରମ୍ଭ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                      <Text style={{ fontSize: 15, color: '#333' }}>ସମ୍ପାଦିତ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
                       <TouchableOpacity onPress={() => clickStartTimeEdit(item.id, item.start_time)}>
                         <Feather name="edit-3" size={18} color="#555" />
                       </TouchableOpacity>
@@ -1626,6 +1682,15 @@ const Index = () => {
                         })()}
                       </View>
                     </>
+                  )}
+
+                  {/* Not Done Block */}
+                  {item.niti_status === "NotStarted" && (
+                    <View style={{ marginBottom: 8 }}>
+                      <Text style={{ fontSize: 14, color: '#B7070A', fontWeight: '600' }}>
+                        ସମ୍ପାଦିତ: {item.not_done_user_id}
+                      </Text>
+                    </View>
                   )}
 
                   {/* Status */}
@@ -2166,6 +2231,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.8,
     shadowRadius: 13,
+    elevation: 5
+  },
+  nitiCell: {
+    backgroundColor: '#fff',
+    height: 70,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
     elevation: 5
   },
   imageContainer: {
