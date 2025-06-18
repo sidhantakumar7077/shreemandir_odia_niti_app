@@ -223,7 +223,7 @@ const Index = () => {
     }
   };
 
-  const clickEndTimeEdit = (nitiId, endTimeStr) => {
+  const clickEndTimeEdit = (nitiId, startTimeStr, endTimeStr) => {
     const parts = endTimeStr.split(':');
     const now = new Date();
     now.setHours(parseInt(parts[0], 10));
@@ -233,6 +233,15 @@ const Index = () => {
     setSelectedNiti(nitiId);
     setEndTime(now); // ✅ Valid Date object
     setEndTimeEditModal(true);
+
+    // For Start time
+    const stparts = startTimeStr.split(':');
+    const stnow = new Date();
+    stnow.setHours(parseInt(stparts[0], 10));
+    stnow.setMinutes(parseInt(stparts[1], 10));
+    stnow.setSeconds(parseInt(stparts[2], 10));
+    stnow.setMilliseconds(0);
+    setStartTime(stnow); // ✅ Valid Date object
   };
 
   const endTimeEdit = async () => {
@@ -1642,7 +1651,7 @@ const Index = () => {
                       <View style={{ marginBottom: 8 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Text style={{ fontSize: 15, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                          <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.end_time)}>
+                          <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.start_time, item.end_time)}>
                             <Feather name="edit-3" size={18} color="#555" />
                           </TouchableOpacity>
                         </View>
@@ -1793,6 +1802,7 @@ const Index = () => {
               mode="time"
               date={endTime}
               onDateChange={setEndTime}
+              minimumDate={startTime}
               textColor="#000"
               androidVariant="iosClone"
               is24hourSource="locale"
