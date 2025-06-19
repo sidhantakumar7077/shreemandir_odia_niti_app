@@ -617,6 +617,50 @@ const Index = () => {
     }
   };
 
+  const [allOtherNiti, setAllOtherNiti] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+
+  const fetchAllOtherNiti = async () => {
+    try {
+      const res = await fetch(`${base_url}api/get-other-niti`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (data.status) {
+        setAllOtherNiti(data.data);
+        // console.log("All Other Niti", data.data);
+      } else {
+        console.log("Error fetching all Other Niti", data.message);
+      }
+    } catch (error) {
+      console.log("Error fetching all Other Niti:", error);
+    }
+  };
+
+  const filterSuggestions = (text, isEnglish = false) => {
+    if (!text || text.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const filtered = allOtherNiti.filter(item => {
+      const value = isEnglish ? item.english_niti_name : item.niti_name;
+      return value?.toLowerCase().includes(text.toLowerCase());
+    });
+
+    setSuggestions(filtered.slice(0, 5)); // limit to 5
+  };
+
+  const handleSuggestionSelect = item => {
+    setOtherNitiText(item.niti_name);
+    setOtherEngNitiText(item.english_niti_name);
+    setSuggestions([]);
+  };
+
   const deleteOtherNiti = async (id) => {
     const token = await AsyncStorage.getItem('storeAccesstoken');
     // console.log("Deleting Other Niti with ID:", id);
@@ -1016,6 +1060,7 @@ const Index = () => {
       getOtherNiti();
       getNotice();
       getDarshan();
+      fetchAllOtherNiti();
     }
   }, [isFocused]);
 
@@ -2106,7 +2151,7 @@ const Index = () => {
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 20 }}>
           <View style={{ backgroundColor: '#fff', borderRadius: 15, padding: 20, elevation: 10 }}>
             {/* Close Icon */}
-            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => setIsOtherNitiModalVisible(false)}>
+            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => {setIsOtherNitiModalVisible(false); setOtherNitiText(''); setOtherEngNitiText(''); setSuggestions([]);}}>
               <Ionicons name="close" color="#000" size={28} />
             </TouchableOpacity>
             <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
@@ -2122,9 +2167,24 @@ const Index = () => {
               value={otherNitiText}
               onChangeText={text => {
                 setOtherNitiText(text);
-                if (text.length >= 4) setSelectedItem(null);
+                filterSuggestions(text, false);
               }}
             />
+
+            {/* Suggestion List */}
+            {suggestions.length > 0 && (
+              <ScrollView style={{ maxHeight: 150, backgroundColor: '#f1f1f1', marginVertical: 10, borderRadius: 8 }}>
+                {suggestions.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleSuggestionSelect(item)}
+                    style={{ padding: 10, borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
+                    <Text style={{ fontWeight: '600' }}>{item.niti_name}</Text>
+                    <Text style={{ color: '#666', fontSize: 12 }}>{item.english_niti_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
 
             {/* Other Special English Niti Input */}
             <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଇଂରାଜୀ ନୀତି</Text>
@@ -2137,7 +2197,7 @@ const Index = () => {
               value={otherEngNitiText}
               onChangeText={text => {
                 setOtherEngNitiText(text);
-                if (text.length >= 4) setSelectedItem(null);
+                filterSuggestions(text, true);
               }}
             />
 
