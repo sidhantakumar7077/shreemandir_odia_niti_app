@@ -642,7 +642,7 @@ const Index = () => {
   };
 
   const filterSuggestions = (text, isEnglish = false) => {
-    if (!text || text.length < 2) {
+    if (!text || text.length < 4) {
       setSuggestions([]);
       return;
     }
@@ -2151,7 +2151,7 @@ const Index = () => {
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 20 }}>
           <View style={{ backgroundColor: '#fff', borderRadius: 15, padding: 20, elevation: 10 }}>
             {/* Close Icon */}
-            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => {setIsOtherNitiModalVisible(false); setOtherNitiText(''); setOtherEngNitiText(''); setSuggestions([]);}}>
+            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => { setIsOtherNitiModalVisible(false); setOtherNitiText(''); setOtherEngNitiText(''); setSuggestions([]); }}>
               <Ionicons name="close" color="#000" size={28} />
             </TouchableOpacity>
             <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
@@ -2162,7 +2162,7 @@ const Index = () => {
               placeholder="ଓଡ଼ିଆ ରେ ଲେଖନ୍ତୁ..."
               placeholderTextColor="#888"
               multiline
-              numberOfLines={4}
+              numberOfLines={3}
               style={styles.input}
               value={otherNitiText}
               onChangeText={text => {
@@ -2173,14 +2173,14 @@ const Index = () => {
 
             {/* Suggestion List */}
             {suggestions.length > 0 && (
-              <ScrollView style={{ maxHeight: 150, backgroundColor: '#f1f1f1', marginVertical: 10, borderRadius: 8 }}>
+              <ScrollView style={{ maxHeight: 170, backgroundColor: '#f1f1f1', marginVertical: 10, borderRadius: 8 }}>
                 {suggestions.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleSuggestionSelect(item)}
                     style={{ padding: 10, borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
-                    <Text style={{ fontWeight: '600' }}>{item.niti_name}</Text>
-                    <Text style={{ color: '#666', fontSize: 12 }}>{item.english_niti_name}</Text>
+                    <Text style={{ fontWeight: '600', fontSize: 15, color: '#000' }}>{item.niti_name}</Text>
+                    <Text style={{ fontWeight: '600', fontSize: 15, color: '#000' }}>{item.english_niti_name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -2192,7 +2192,7 @@ const Index = () => {
               placeholder="Type in English..."
               placeholderTextColor="#888"
               multiline
-              numberOfLines={4}
+              numberOfLines={3}
               style={styles.input}
               value={otherEngNitiText}
               onChangeText={text => {
