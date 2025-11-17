@@ -1708,12 +1708,12 @@ const Index = () => {
                     </View>
                     {item.start_user_id && (
                       <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                        ➤ ଆରମ୍ଭ: {item.start_user_id}
+                        ➤ ଆରମ୍ଭ: {item.start_user_id} ({item.start_user_name})
                       </Text>
                     )}
                     {item.start_time_edit_user_id && (
                       <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                        ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id}
+                        ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id} ({item.start_time_edit_user_name})
                       </Text>
                     )}
                   </View>
@@ -1730,12 +1730,12 @@ const Index = () => {
                         </View>
                         {item.end_user_id && (
                           <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                            ➤ ସମାପନ: {item.end_user_id}
+                            ➤ ସମାପନ: {item.end_user_id} ({item.end_user_name})
                           </Text>
                         )}
                         {item.end_time_edit_user_id && (
                           <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                            ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id}
+                            ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id} ({item.end_time_edit_user_name})
                           </Text>
                         )}
                       </View>
@@ -1770,7 +1770,7 @@ const Index = () => {
                   {item.niti_status === "NotStarted" && (
                     <View style={{ marginBottom: 8 }}>
                       <Text style={{ fontSize: 14, color: '#B7070A', fontWeight: '600' }}>
-                        ସମ୍ପାଦିତ: {item.not_done_user_id}
+                        ସମ୍ପାଦିତ: {item.not_done_user_id}  ({item.not_done_user_name})
                       </Text>
                     </View>
                   )}

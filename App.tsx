@@ -25,6 +25,7 @@ import Darshan from './src/Screens/Darshan/Index'
 import MahaPrasad from './src/Screens/MahaPrasad/Index'
 import HundiCollection from './src/Screens/HundiCollection/Index'
 import Notice from './src/Screens/Notice/Index'
+import NitiHistory from './src/Screens/NitiHistory/Index'
 
 const Stack = createNativeStackNavigator()
 
@@ -225,6 +226,7 @@ const App = () => {
             <Stack.Screen name="MahaPrasad" component={MahaPrasad} />
             <Stack.Screen name="HundiCollection" component={HundiCollection} />
             <Stack.Screen name="Notice" component={Notice} />
+            <Stack.Screen name='NitiHistory' component={NitiHistory} />
           </>
         }
       </Stack.Navigator>

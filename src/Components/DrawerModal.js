@@ -74,7 +74,11 @@ const DrawerModal = ({ visible, onClose }) => {
                                 </View>
                                 <Text style={styles.drawerLable}>ସୂଚନା</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.drawerCell, { marginTop: 0.5 }]}>
+                            <TouchableOpacity style={styles.drawerCell} onPress={() => { navigation.navigate('NitiHistory'), onClose() }}>
+                                <View style={{ width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
+                                    <Icon name="history" size={28} color="#FFA726" />
+                                </View>
+                                <Text style={styles.drawerLable}>ଇତିହାସ</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.drawerCell, { marginTop: 0 }]}>
                             </TouchableOpacity>
