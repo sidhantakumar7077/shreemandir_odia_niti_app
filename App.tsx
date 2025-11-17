@@ -16,6 +16,7 @@ import NoInternet from './src/Screens/NoInternet/Index'
 // AUth
 import Login from './src/Screens/Auth/Login'
 import OtpVerify from './src/Screens/Auth/OtpVerify'
+import NewLogin from './src/Screens/Auth/NewLogin';
 
 // Pages
 import Home from './src/Screens/Home/Index'
@@ -216,8 +217,8 @@ const App = () => {
           <Stack.Screen name="NoInternet" component={NoInternet} />
           :
           <>
-            {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
-            {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="Login" component={Login} />}
+            {access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="NewLogin" component={NewLogin} />}
+            {!access_token ? <Stack.Screen name="Home" component={Home} /> : <Stack.Screen name="NewLogin" component={NewLogin} />}
             <Stack.Screen name="OtpVerify" component={OtpVerify} />
             <Stack.Screen name="ManualNitiPage" component={ManualNitiPage} />
             <Stack.Screen name="Darshan" component={Darshan} />

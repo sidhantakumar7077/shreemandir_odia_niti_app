@@ -36,6 +36,7 @@ const Index = () => {
       getAllNiti();
       getCompletedNiti();
       getOtherNiti();
+      getFestivalNiti();
       getNotice();
       getDarshan();
       console.log("Refreshing Successful");
@@ -50,6 +51,8 @@ const Index = () => {
   const [otherNitiText, setOtherNitiText] = useState('');
   const [otherEngNitiText, setOtherEngNitiText] = useState('');
   const [runningTimers, setRunningTimers] = useState({});
+  const [festivalNiti, setFestivalNiti] = useState([]);
+  const [selectedFestivalId, setSelectedFestivalId] = useState(null);
 
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -351,6 +354,28 @@ const Index = () => {
     }
   };
 
+  const getFestivalNiti = async () => {
+    try {
+      const response = await fetch(base_url + 'api/today-festival-niti', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const responseData = await response.json();
+      if (responseData.status) {
+        setFestivalNiti(responseData.data);
+        // console.log("festivalNiti", responseData.data);
+      } else {
+        console.log("Error fetching festival Niti", responseData);
+      }
+    } catch (error) {
+      console.log("Error fetching festival Niti", error);
+    }
+  };
+
   const getCompletedNiti = async () => {
     try {
       const response = await fetch(base_url + 'api/completed-niti', {
@@ -606,6 +631,7 @@ const Index = () => {
         setSelectedItem(null);
         setOtherNitiText('');
         getOtherNiti();
+        getFestivalNiti();
         getAllNiti();
       } else {
         ToastAndroid.show(data.message || 'Failed to add special Niti', ToastAndroid.SHORT);
@@ -1049,6 +1075,7 @@ const Index = () => {
     getAllNiti();
     getCompletedNiti();
     getOtherNiti();
+    getFestivalNiti();
     getNotice();
     getDarshan();
   };
@@ -1058,6 +1085,7 @@ const Index = () => {
       getAllNiti();
       getCompletedNiti();
       getOtherNiti();
+      getFestivalNiti();
       getNotice();
       getDarshan();
       fetchAllOtherNiti();
@@ -2148,74 +2176,187 @@ const Index = () => {
         visible={isOtherNitiModalVisible}
         onRequestClose={() => setIsOtherNitiModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 20 }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 15, padding: 20, elevation: 10 }}>
-            {/* Close Icon */}
-            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 10 }} onPress={() => { setIsOtherNitiModalVisible(false); setOtherNitiText(''); setOtherEngNitiText(''); setSuggestions([]); }}>
-              <Ionicons name="close" color="#000" size={28} />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', marginBottom: 10, textAlign: 'center' }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 18, paddingVertical: 20, width: '100%', elevation: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8 }}>
+            {/* Header with close */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#341551', flex: 1 }}>ତାଲିକାରେ ନଥିବା ନୀତିକୁ ଯୋଡ଼ନ୍ତୁ।</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsOtherNitiModalVisible(false);
+                  setOtherNitiText('');
+                  setOtherEngNitiText('');
+                  setSuggestions([]);
+                  setSelectedFestivalId(null);
+                }}
+              >
+                <Ionicons name="close" color="#000" size={26} />
+              </TouchableOpacity>
+            </View>
 
-            {/* Other Special Niti Input */}
-            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଓଡ଼ିଆ ନୀତି</Text>
+            {/* Festival Niti List (top section) */}
+            {festivalNiti && festivalNiti.length > 0 && (
+              <View style={{ marginBottom: 14, padding: 10, borderRadius: 12, backgroundColor: '#fef3c7', borderWidth: 1, borderColor: '#fbbf24' }}>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#92400e', marginBottom: 6 }}>ପର୍ବ ପର୍ବାଣୀ ନୀତି ତାଲିକା</Text>
+
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {festivalNiti.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.id || index}
+                      onPress={() => {
+                        setSelectedFestivalId(item.id);
+                        // Auto-fill inputs from selected festival
+                        setOtherNitiText(item.niti_name || '');
+                        setOtherEngNitiText(item.english_niti_name || '');
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 8,
+                        borderBottomWidth:
+                          index === festivalNiti.length - 1 ? 0 : 1,
+                        borderBottomColor: '#fde68a',
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          selectedFestivalId === item.id
+                            ? 'radio-button-on'
+                            : 'radio-button-off'
+                        }
+                        size={20}
+                        color="#B7070A"
+                        style={{ marginRight: 8 }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            fontSize: 14,
+                            color: '#111827',
+                          }}
+                        >
+                          {item.niti_name}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Odia Niti Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 6, fontWeight: '600' }}>ଓଡ଼ିଆ ନୀତି</Text>
             <TextInput
               placeholder="ଓଡ଼ିଆ ରେ ଲେଖନ୍ତୁ..."
               placeholderTextColor="#888"
               multiline
               numberOfLines={3}
-              style={styles.input}
+              style={{
+                borderWidth: 1,
+                borderColor: '#ddd',
+                borderRadius: 10,
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                marginBottom: 10,
+                fontSize: 14,
+                color: '#111827',
+                textAlignVertical: 'top',
+              }}
               value={otherNitiText}
-              onChangeText={text => {
+              onChangeText={(text) => {
                 setOtherNitiText(text);
                 filterSuggestions(text, false);
+                setSelectedFestivalId(null);
               }}
             />
 
-            {/* Suggestion List */}
+            {/* Suggestion List (you already had this) */}
             {suggestions.length > 0 && (
-              <ScrollView style={{ maxHeight: 170, backgroundColor: '#f1f1f1', marginVertical: 10, borderRadius: 8 }}>
+              <ScrollView
+                style={{
+                  maxHeight: 170,
+                  backgroundColor: '#f1f1f1',
+                  marginVertical: 10,
+                  borderRadius: 8,
+                }}
+              >
                 {suggestions.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleSuggestionSelect(item)}
-                    style={{ padding: 10, borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
-                    <Text style={{ fontWeight: '600', fontSize: 15, color: '#000' }}>{item.niti_name}</Text>
-                    <Text style={{ fontWeight: '600', fontSize: 15, color: '#000' }}>{item.english_niti_name}</Text>
+                    style={{
+                      padding: 10,
+                      borderBottomColor: '#ccc',
+                      borderBottomWidth: 1,
+                    }}
+                  >
+                    <Text
+                      style={{ fontWeight: '600', fontSize: 15, color: '#000' }}
+                    >
+                      {item.niti_name}
+                    </Text>
+                    <Text
+                      style={{ fontWeight: '600', fontSize: 15, color: '#000' }}
+                    >
+                      {item.english_niti_name}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
             )}
 
-            {/* Other Special English Niti Input */}
-            <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>ଇଂରାଜୀ ନୀତି</Text>
+            {/* English Niti Input */}
+            <Text style={{ fontSize: 16, color: '#333', marginBottom: 6, fontWeight: '600' }}>ଇଂରାଜୀ ନୀତି</Text>
             <TextInput
               placeholder="Type in English..."
               placeholderTextColor="#888"
               multiline
               numberOfLines={3}
-              style={styles.input}
+              style={{
+                borderWidth: 1,
+                borderColor: '#ddd',
+                borderRadius: 10,
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                marginBottom: 14,
+                fontSize: 14,
+                color: '#111827',
+                textAlignVertical: 'top',
+              }}
               value={otherEngNitiText}
-              onChangeText={text => {
+              onChangeText={(text) => {
                 setOtherEngNitiText(text);
                 filterSuggestions(text, true);
+                setSelectedFestivalId(null);
               }}
             />
 
             {/* Submit Button */}
             <TouchableOpacity
               onPress={handleSubmitOtherNiti}
-              disabled={otherNitiText.trim().length >= 3 && otherEngNitiText.trim().length >= 3 ? false : true}
+              disabled={
+                otherNitiText.trim().length >= 3 &&
+                  otherEngNitiText.trim().length >= 3
+                  ? false
+                  : true
+              }
               style={{
-                borderRadius: 8,
+                borderRadius: 999,
                 paddingVertical: 12,
                 alignItems: 'center',
                 backgroundColor:
-                  otherNitiText.trim().length >= 3 && otherEngNitiText.trim().length >= 3
+                  otherNitiText.trim().length >= 3 &&
+                    otherEngNitiText.trim().length >= 3
                     ? '#B7070A'
-                    : '#ccc'
+                    : '#ccc',
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Submit</Text>
+              <Text
+                style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}
+              >
+                Submit
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

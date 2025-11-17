@@ -97,7 +97,7 @@ const DrawerModal = ({ visible, onClose }) => {
                             <View style={{ borderTopColor: '#a0a0a0', height: '100%', justifyContent: 'flex-end', alignItems: 'flex-start', paddingBottom: 10 }}>
                                 <View style={{ width: '100%', height: 0.5, backgroundColor: '#B7070A', marginBottom: 10 }} />
                                 <View style={{ width: '90%', alignSelf: 'center' }}>
-                                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#000' }}>Current Version 1.0.0</Text>
+                                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#000' }}>Current Version 1.0.1</Text>
                                     {/* <Pressable style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                         <Text style={{ color: '#000', fontSize: 16, fontWeight: '600', opacity: 0.7, marginRight: 7 }}>Update Available  2.0</Text>
                                         <Icon name="file-download" size={20} color={'green'} />
