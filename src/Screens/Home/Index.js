@@ -1092,6 +1092,56 @@ const Index = () => {
     }
   }, [isFocused]);
 
+  const [resetStopConfirmModalVisible, setResetStopConfirmModalVisible] = useState(false);
+
+  const showStopResetConfirmation = (data) => {
+    setConfirmData(data);
+    setResetStopConfirmModalVisible(true);
+  }
+
+  const resetStopNiti = async (id) => {
+    const token = await AsyncStorage.getItem('storeAccesstoken');
+    try {
+      const response = await fetch(base_url + 'api/niti/undo-stop', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          niti_id: id,
+        }),
+      });
+      const responseData = await response.json();
+      if (responseData.status) {
+        getAllNiti();
+        getCompletedNiti();
+        getDarshan();
+        setConfirmData(null);
+        ToastAndroid.show('Niti reset successfully', ToastAndroid.SHORT);
+        console.log("Niti reset successfully", responseData);
+      } else {
+        getAllNiti();
+        getCompletedNiti();
+        getDarshan();
+        setConfirmData(null);
+        ToastAndroid.show('Error resetting Niti', ToastAndroid.SHORT);
+        console.log("Error", responseData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const completedNitiList = React.useMemo(
+    () => [...completedNiti].reverse(),   // same ordering you already use
+    [completedNiti]
+  );
+
+  const latestNitiId = completedNitiList?.[0]?.niti_id;
+  // console.log("Latest Niti ID:", latestNitiId);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#FFBE00', opacity: isModalVisible && isDrawerOpen ? 0.8 : 1 }}>
       <DrawerModal visible={isDrawerOpen} navigation={navigation} onClose={closeDrawer} />
@@ -1680,129 +1730,148 @@ const Index = () => {
             <FlatList
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
-              data={[...completedNiti].reverse()}
+              // data={[...completedNiti].reverse()}
+              data={completedNitiList}
               keyExtractor={(item, index) => `main-${item.niti_id}-${index}`}
-              renderItem={({ item }) => (
-                <View style={{
-                  backgroundColor: '#fff',
-                  marginBottom: 12,
-                  padding: 15,
-                  borderRadius: 12,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: '700', marginBottom: 5 }}>
-                    {item.niti_name}
-                  </Text>
+              renderItem={({ item }) => {
+                const isLatest = item.niti_id === latestNitiId;
 
-                  {/* Start Time Block */}
-                  <View style={{ marginBottom: 8 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 15, color: '#333' }}>ସମ୍ପାଦିତ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                      <TouchableOpacity onPress={() => clickStartTimeEdit(item.id, item.start_time)}>
-                        <Feather name="edit-3" size={18} color="#555" />
-                      </TouchableOpacity>
-                    </View>
-                    {item.start_user_id && (
-                      <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                        ➤ ଆରମ୍ଭ: {item.start_user_id} ({item.start_user_name})
-                      </Text>
-                    )}
-                    {item.start_time_edit_user_id && (
-                      <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                        ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id} ({item.start_time_edit_user_name})
-                      </Text>
-                    )}
-                  </View>
-
-                  {/* End Time Block */}
-                  {item.niti_status === "Completed" && (
-                    <>
-                      <View style={{ marginBottom: 8 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text style={{ fontSize: 15, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
-                          <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.start_time, item.end_time)}>
-                            <Feather name="edit-3" size={18} color="#555" />
-                          </TouchableOpacity>
-                        </View>
-                        {item.end_user_id && (
-                          <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                            ➤ ସମାପନ: {item.end_user_id} ({item.end_user_name})
-                          </Text>
-                        )}
-                        {item.end_time_edit_user_id && (
-                          <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
-                            ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id} ({item.end_time_edit_user_name})
-                          </Text>
-                        )}
-                      </View>
-
-                      {/* Duration */}
-                      <View style={{
-                        backgroundColor: '#f0f4ff',
-                        padding: 8,
-                        borderRadius: 8,
-                        alignSelf: 'flex-start',
-                        marginBottom: 10,
-                      }}>
-                        {(() => {
-                          const start = moment(item.start_time, "HH:mm:ss");
-                          let end = moment(item.end_time, "HH:mm:ss");
-                          if (end.isBefore(start)) end.add(1, 'day');
-                          const duration = moment.duration(end.diff(start));
-                          const hours = String(duration.hours()).padStart(2, '0');
-                          const minutes = String(duration.minutes()).padStart(2, '0');
-                          const seconds = String(duration.seconds()).padStart(2, '0');
-                          return (
-                            <Text style={{ fontSize: 13, fontWeight: '500', color: '#222' }}>
-                              🕒 ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
-                            </Text>
-                          );
-                        })()}
-                      </View>
-                    </>
-                  )}
-
-                  {/* Not Done Block */}
-                  {item.niti_status === "NotStarted" && (
-                    <View style={{ marginBottom: 8 }}>
-                      <Text style={{ fontSize: 14, color: '#B7070A', fontWeight: '600' }}>
-                        ସମ୍ପାଦିତ: {item.not_done_user_id}  ({item.not_done_user_name})
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Status */}
+                return (
                   <View style={{
-                    backgroundColor: item.niti_status === 'Completed'
-                      ? '#d4edda'
-                      : item.niti_status === 'Started'
-                        ? '#fff3cd'
-                        : '#f8d7da',
-                    paddingVertical: 6,
-                    paddingHorizontal: 12,
-                    borderRadius: 20,
-                    alignSelf: 'flex-start',
+                    backgroundColor: '#fff',
+                    marginBottom: 12,
+                    padding: 15,
+                    borderRadius: 12,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
                   }}>
-                    <Text style={{
-                      color: item.niti_status === 'Completed' ? '#155724' : '#856404',
-                      fontSize: 13,
-                      fontWeight: '600',
-                    }}>
-                      {
-                        item.niti_status === 'Completed'
-                          ? '✔ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି'
-                          : item.niti_status === 'Started'
-                            ? '⌛ ଚାଲୁଛି'
-                            : '❌ ନୀତି ହୋଇନାହିଁ'
-                      }
+                    <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: '700', marginBottom: 5 }}>
+                      {item.niti_name}
                     </Text>
+
+                    {/* Start Time Block */}
+                    <View style={{ marginBottom: 8 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 15, color: '#333' }}>ସମ୍ପାଦିତ ସମୟ: {moment(item.start_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                        <TouchableOpacity onPress={() => clickStartTimeEdit(item.id, item.start_time)}>
+                          <Feather name="edit-3" size={18} color="#555" />
+                        </TouchableOpacity>
+                      </View>
+                      {item.start_user_id && (
+                        <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                          ➤ ଆରମ୍ଭ: {item.start_user_id} ({item.start_user_name})
+                        </Text>
+                      )}
+                      {item.start_time_edit_user_id && (
+                        <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                          ✎ ଆରମ୍ଭ ସଂଶୋଧନ: {item.start_time_edit_user_id} ({item.start_time_edit_user_name})
+                        </Text>
+                      )}
+                    </View>
+
+                    {/* End Time Block */}
+                    {item.niti_status === "Completed" && (
+                      <>
+                        <View style={{ marginBottom: 8 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 15, color: '#333' }}>ସମାପନ ସମୟ: {moment(item.end_time, "HH:mm:ss").format("HH:mm:ss")}</Text>
+                            <TouchableOpacity onPress={() => clickEndTimeEdit(item.id, item.start_time, item.end_time)}>
+                              <Feather name="edit-3" size={18} color="#555" />
+                            </TouchableOpacity>
+                          </View>
+                          {item.end_user_id && (
+                            <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                              ➤ ସମାପନ: {item.end_user_id} ({item.end_user_name})
+                            </Text>
+                          )}
+                          {item.end_time_edit_user_id && (
+                            <Text style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                              ✎ ସମାପନ ସଂଶୋଧନ: {item.end_time_edit_user_id} ({item.end_time_edit_user_name})
+                            </Text>
+                          )}
+                        </View>
+
+                        {/* Duration */}
+                        <View style={{
+                          backgroundColor: '#f0f4ff',
+                          padding: 8,
+                          borderRadius: 8,
+                          alignSelf: 'flex-start',
+                          marginBottom: 10,
+                        }}>
+                          {(() => {
+                            const start = moment(item.start_time, "HH:mm:ss");
+                            let end = moment(item.end_time, "HH:mm:ss");
+                            if (end.isBefore(start)) end.add(1, 'day');
+                            const duration = moment.duration(end.diff(start));
+                            const hours = String(duration.hours()).padStart(2, '0');
+                            const minutes = String(duration.minutes()).padStart(2, '0');
+                            const seconds = String(duration.seconds()).padStart(2, '0');
+                            return (
+                              <Text style={{ fontSize: 13, fontWeight: '500', color: '#222' }}>
+                                🕒 ମୋଟ ଅବଧି: {hours}:{minutes}:{seconds}
+                              </Text>
+                            );
+                          })()}
+                        </View>
+                      </>
+                    )}
+
+                    {/* Not Done Block */}
+                    {item.niti_status === "NotStarted" && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ fontSize: 14, color: '#B7070A', fontWeight: '600' }}>
+                          ସମ୍ପାଦିତ: {item.not_done_user_id}  ({item.not_done_user_name})
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Status */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{
+                        backgroundColor: item.niti_status === 'Completed'
+                          ? '#d4edda'
+                          : item.niti_status === 'Started'
+                            ? '#fff3cd'
+                            : '#f8d7da',
+                        paddingVertical: 6,
+                        paddingHorizontal: 12,
+                        borderRadius: 20,
+                        alignSelf: 'flex-start',
+                      }}>
+                        <Text style={{
+                          color: item.niti_status === 'Completed' ? '#155724' : '#856404',
+                          fontSize: 13,
+                          fontWeight: '600',
+                        }}>
+                          {
+                            item.niti_status === 'Completed'
+                              ? '✔ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି'
+                              : item.niti_status === 'Started'
+                                ? '⌛ ଚାଲୁଛି'
+                                : '❌ ନୀତି ହୋଇନାହିଁ'
+                          }
+                        </Text>
+                      </View>
+                      {/* Reset Button Show only Latest Niti and status completed */}
+                      {item.niti_status === "Completed" && isLatest && (
+                        <TouchableOpacity
+                          onPress={() => showStopResetConfirmation(item.niti_id)}
+                          style={{ backgroundColor: '#e0e0e0', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10 }}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Feather name="rotate-ccw" size={18} color="#555" />
+                            <Text style={{ marginLeft: 5, fontSize: 14, color: '#555' }}>Reset</Text>
+                          </View>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
-                </View>
-              )}
+                )
+              }}
             />
           </View>
         )}
@@ -1827,14 +1896,15 @@ const Index = () => {
               {/* Or use Icon like Feather name="x" */}
             </TouchableOpacity>
 
+            {/* Start Time Picker 12 Hour */}
             <DatePicker
               mode="time"
               date={startTime}
               onDateChange={setStartTime}
               textColor="#000"
               androidVariant="iosClone"
-              is24hourSource="locale"
-              locale="en-GB"
+              locale="en-US"
+              is24hourSource="device"
             />
 
             <TouchableOpacity
@@ -1878,8 +1948,8 @@ const Index = () => {
               minimumDate={startTime}
               textColor="#000"
               androidVariant="iosClone"
-              is24hourSource="locale"
-              locale="en-GB"
+              locale="en-US"
+              is24hourSource="device"
             />
             <TouchableOpacity
               style={{
@@ -2052,6 +2122,41 @@ const Index = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleConfirmAction}
+                style={styles.confirmButton}
+              >
+                <Text style={styles.confirmText}>Yes, Proceed</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Reset/Stop Confirmation Modal */}
+      <Modal
+        visible={resetStopConfirmModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setResetStopConfirmModalVisible(false)}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="alert-circle-outline" size={48} color="#FF5722" />
+            <Text style={styles.modalTitle}>ନିଶ୍ଚିତ କରନ୍ତୁ</Text>
+            <Text style={styles.modalMessage}>
+              ଆପଣ ଏହି ନୀତିକୁ <Text style={{ fontWeight: 'bold', color: '#FF5722' }}>Reset</Text> କରିବାକୁ ଚାହୁଁଛନ୍ତି କି ?
+            </Text>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={() => setResetStopConfirmModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  resetStopNiti(confirmData);
+                  setResetStopConfirmModalVisible(false);
+                }}
                 style={styles.confirmButton}
               >
                 <Text style={styles.confirmText}>Yes, Proceed</Text>
